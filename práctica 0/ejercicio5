@@ -1,0 +1,167 @@
+{ Un gimnasio necesita procesar las asistencias de sus clientes. Cada
+asistencia tiene día, mes, año, número de cliente (entre 1 y 500) y la
+actividad realizada (valor entre 1 y 5).
+ a) Implemente un módulo que retorne una lista de asistencias de clientes
+un gimnasio. Las asistencias dentro de la lista deben quedar ordenadas de
+menor a mayor por número de cliente. Generar aleatoriamente los valores
+hasta generar un valor cero para el número de cliente.
+ b) Implemente un módulo que reciba la lista generada en a) e imprima
+todos los valores de la lista en el mismo orden que están almacenados.
+ c) Implemente un módulo que reciba la lista generada en a) y un número
+de cliente y retorne la cantidad de asistencias del cliente recibido. Mostrar
+el resultado desde el programa principal.
+ d) Implemente un módulo que reciba la lista generada en a) y retorne la
+actividad con mayor cantidad de asistencias. Mostrar el resultado desde el
+programa principal}
+program gimnasio;
+const dfnumcliente = 5; //son 500 pero para probar
+	dfactividad = 5;
+	dfdia = 31;
+	dfmes = 12;
+	corte = 0;
+
+type
+	rangonumcliente = 0..dfnumcliente;
+	rangoactividad = 1..dfactividad;
+	rangodias = 1..dfdia;
+	rangomes = 1..dfmes;
+
+	asistencia = record
+		dia: rangodias;
+		mes: rangomes;
+		anio: integer;
+		numerocliente: rangonumcliente;
+		actividad: rangoactividad;
+	end;
+
+	lista = ^nodo;
+	nodo = record
+		dato: asistencia;
+		sig: lista;
+	end;
+
+	vectorcontador = array [rangoactividad] of integer;
+	
+procedure insertarordenado(var l: lista; a: asistencia);
+var
+	nue, ant, act: lista;
+begin
+	new(nue);
+	nue^.dato := a;
+	act := l;
+	while ((act <> nil) and (a.numerocliente > act^.dato.numerocliente)) do begin
+		ant := act;
+		act := act^.sig;
+	end;
+	if (act = l) then
+		l := nue
+	else
+		ant^.sig := nue;
+	nue^.sig := act;
+end;
+
+procedure leoasistencia(var a: asistencia);
+begin
+	writeln('Ingrese un valor para el dia: ');
+	readln(a.dia);
+	writeln('Ingrese un valor para el mes: ');
+	readln(a.mes);
+	writeln('Ingrese un valor para el anio: ');
+	readln(a.anio);
+	writeln('Ingrese un valor para la asistencia: ');
+	readln(a.actividad);
+	a.numerocliente := random(500) + 1;
+	writeln('El numero de cliente es: ', a.numerocliente);
+end;
+
+procedure retornolista(var l: lista);
+var
+	a: asistencia;
+begin
+	leoasistencia(a);
+	while(a.numerocliente <> corte) do begin
+		insertarordenado(l, a);
+		leoasistencia(a);
+	end;
+end;
+
+procedure imprimirvaloresB(l: lista);
+begin
+	while (l <> nil) do begin
+		writeln('El dia de la asistencia es: ', l^.dato.dia);
+		writeln('El mes es: ', l^.dato.mes);
+		writeln('El año es: ', l^.dato.anio);
+		writeln('La actividad realizada es: ', l^.dato.actividad);
+		writeln('El numero de cliente es: ', l^.dato.numerocliente);
+		l := l^.sig;
+	end;
+end;
+
+procedure recibeincisoC(l: lista; numcliente: rangonumcliente; var cantidadasistencias: integer);
+begin 
+	while (l <> nil) do begin 
+		if (l^.dato.numerocliente = numcliente) then 
+			cantidadasistencias := cantidadasistencias + 1;
+		l := l^.sig;
+	end;
+end;
+
+ {d) Implemente un módulo que reciba la lista generada en a) y retorne la
+actividad con mayor cantidad de asistencias. Mostrar el resultado desde el
+programa principal}
+
+procedure inicializarvector(var v: vectorcontador);
+var
+	i: rangoactividad;
+begin
+	for i := 1 to dfactividad do 
+		v[i] := 0;
+end;
+
+procedure recorroybuscomaximo(v: vectorcontador; var actmax: rangoactividad);
+var
+	i: rangoactividad;
+	max: integer;
+begin
+	max := -1;
+	for i := 1 to dfactividad do begin
+		if (v[i] > max) then begin
+			max := v[i];
+			actmax := i;
+		end;
+	end;
+end;
+
+procedure incisoD(l: lista; var v: vectorcontador; var actividadmax: rangoactividad); 
+begin
+	while (l <> nil) do begin 
+		v[l^.dato.actividad] := v[l^.dato.actividad] + 1;
+		l := l^.sig;
+	end;
+	recorroybuscomaximo(v, actividadmax);
+end;
+// programa principal
+var
+	l: lista;
+	cantidadasistencias: integer;
+	numcli: rangonumcliente;
+	v: vectorcontador;
+	actividadmaxima: rangoactividad;
+	
+begin
+	Randomize;
+	l := nil;
+	retornolista(l); // A
+	
+	imprimirvaloresB(l); // B
+	
+	cantidadasistencias := 0;
+	writeln('Ingrese un numero de cliente: ');
+	readln(numcli);
+	recibeincisoC(l, numcli, cantidadasistencias); // C
+	
+	writeln('La cantidad de asistencias fue de: ', cantidadasistencias);
+	inicializarvector(v);
+	incisoD(l, v, actividadmaxima); // D
+	writeln('La actividad maxima fue la numero: ', actividadmaxima);
+end.
