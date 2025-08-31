@@ -1,0 +1,55 @@
+{a) Implemente un módulo CargarVector que cree un vector de enteros
+con a lo sumo 50 valores aleatorios. Los valores, generados
+aleatoriamente (entre un mínimo y máximo recibidos por parámetro),
+deben ser almacenados en el vector en el mismo orden que se
+generaron, hasta que se genere el cero.
+b) Implemente un módulo ImprimirVector que reciba el vector generado
+en a) e imprima todos los valores del vector en el mismo orden que
+están almacenados. Qué cambiaría para imprimir en orden inverso?
+c) Escriba el cuerpo principal que invoque a los módulos ya
+implementados.}
+program ejercicio2clase0;
+const
+	dfvector = 50;
+	corte = 0;
+type
+	rango = 1..dfvector;
+	
+	vector = array [rango] of integer;
+
+procedure cargarVector(var v: vector; var dl: integer; min, max: integer);
+var
+	aleatorio: integer;
+begin 
+	randomize;
+	aleatorio := random(max - min + 1) + min;
+	dl := 0;
+	while (aleatorio <> corte) and (dl < dfvector) do begin 
+		dl := dl + 1;
+		v[dl] := aleatorio;
+		aleatorio := random(max - min + 1) + min;
+	end;	
+end;
+	
+procedure imprimirVector(v: vector; dl: integer);	
+var
+	i: integer;
+begin 
+	for i:= dl downto 1 do 
+		writeln(v[i]);
+end;
+		
+var
+	v: vector;
+	minimo, maximo, dl: integer;
+begin
+	writeln('Ingrese el limite inferior correspondiente a "A":');
+	readln(minimo); 
+	writeln('Ingrese el limite superior correspondiente a "B":');
+	readln(maximo);
+	if minimo < maximo then 
+		cargarVector(v, dl, minimo, maximo)
+	else 
+		writeln('El minimo debe ser menor que el maximo');
+	imprimirVector(v, dl);
+end.
