@@ -1,1 +1,52 @@
+program NumAleatorio;
+const
+	dfnumsale = 20;
 
+procedure imprimirnumerosaleatorios(ale: integer);
+var
+	i: integer;
+begin 
+	writeln('Los 20 numeros aleatorios son: ');
+	for i := 1 to dfnumsale do begin
+		ale := random(100);
+		writeln(ale);
+	end;
+end;
+
+procedure imprimirNnumsaleatorios(n, a, b: integer);
+var
+	i, aux: integer;
+begin
+	writeln('Los ', n ,'numeros son: ');
+	for i := 1 to n do begin 
+		aux := random(b - a + 1) + a;
+		writeln(aux);
+	end;
+end;
+
+procedure imprimohastanumeroigual(f, a, b: integer);
+var
+	aux: integer;
+begin
+	aux := random(b - a + 1) + a;
+	writeln('Los numeros aleatorios distintos de f son: ');
+	while (aux <> f) do 
+		writeln(aux);
+end;
+var 
+	ale, a, b, n, f: integer;
+begin
+	randomize;
+	ale := random(100);
+	imprimirnumerosaleatorios(ale);
+	writeln('Ingrese el valor para a: ');
+	readln(a);
+	writeln('Ingrese el valor para b: ');
+	readln(b);
+	writeln('Ingrese el valor para n: ');
+	readln(n);
+	imprimirNnumsaleatorios(n, a , b);
+	writeln('Ingrese el valor para f: ');
+	readln(f);
+	imprimohastanumeroigual(f, a, b);
+end.
