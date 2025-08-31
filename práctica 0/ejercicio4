@@ -1,0 +1,91 @@
+{a) Implemente un módulo CargarListaOrdenada que cree una lista de
+enteros y le agregue valores aleatorios entre el 100 y 150, hasta que se
+genere el 120. Los valores dentro de la lista deben quedar ordenados
+de menor a mayor.
+b) Reutilice el módulo ImprimirLista que reciba una lista generada en a) e
+imprima todos los valores de la lista en el mismo orden que están
+almacenados.
+c) Implemente un módulo BuscarElementoOrdenado que reciba la lista
+generada en a) y un valor entero y retorne true si el valor se encuentra
+en la lista y false en caso contrario.
+d) Invocar desde el programa principal a los módulos implementados
+para crear una lista ordenada, mostrar todos sus elementos y
+determinar si un valor leído por teclado se encuentra o no en la lista.}
+program actividadcuatro;
+const
+	corte = 120;
+type
+	
+	lista = ^nodo;
+	nodo = record
+		dato: integer;
+		sig: lista;
+	end;
+	
+procedure insertarordenado(var l: lista; num: integer);
+var
+	nue, act, ant: lista;
+begin 
+	new(nue);
+	nue^.dato := num;
+	act := l;
+	while (act <> nil) and (act^.dato < num) do begin 
+		ant := act;
+		act := act^.sig;
+	end;
+	if (act = l) then 
+		l := nue
+	else
+		ant^.sig := nue;
+	nue^.sig := act;
+end;
+	
+procedure cargarlista(var l: lista);
+var
+	numero: integer;
+begin 
+	numero := random(51) + 100;
+	while (numero <> corte) do begin 
+		insertarordenado(l, numero);
+		numero := random(51) + 100;
+	end;
+end;
+
+
+	
+procedure imprimirlista(l: lista);
+begin 
+	while (l <> nil) do begin // mismo orden en q fue almacenada?
+		writeln(l^.dato);
+		l := l^.sig;
+	end;
+end;
+
+function buscarelementoordenado(l: lista; nro: integer): boolean;
+var
+	aux: lista;
+	encontre: boolean;
+begin
+	aux := l;
+	encontre := false;
+	while (aux <> nil) and (aux^.dato < nro) do  
+		aux := aux^.sig;
+	if (aux <> nil) and (aux^.dato = nro) then 
+		encontre := true;
+	buscarelementoordenado := encontre;
+	writeln(encontre);
+end;
+
+
+var
+	l: lista;
+	num: integer;
+begin
+	Randomize;
+	l := nil;
+	cargarlista(l);
+	imprimirlista(l);
+	writeln('Ingrese un valor para así buscarlo en la lista: ');
+	readln(num);
+	buscarelementoordenado(l, num);
+end.
