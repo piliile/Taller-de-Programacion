@@ -1,1 +1,159 @@
 
+program ejercicio4;
+const 
+	dfrubro = 6;
+	dfvector = 20;
+	corte = -1;
+type
+	rangovector = 1..dfvector;
+	rangorubro = 1..dfrubro;
+	
+	producto = record
+		code: integer;
+		coderubro: rangorubro;
+		precio: real;
+	end;
+	
+	lista = ^nodo;
+	nodo = record
+		dato: producto;
+		sig: lista;
+	end;	
+	
+	vector = array [rangorubro] of lista;
+
+	vector2 = array [rangovector] of producto;
+procedure leerproducto(var p: producto);
+begin
+	writeln('Ingrese el precio: ');
+	readln(p.precio);
+	if (p.precio <> corte) then begin
+		writeln('Ingrese el codigo de producto: ');
+		readln(p.code);
+		writeln('Ingrese el codigo de rubro: ');
+		readln(p.coderubro);
+	end;
+end;
+
+procedure insertarordenado(var l: lista; p: producto);
+var
+	nue, act, ant: lista;
+begin 
+	new(nue);
+	nue^.dato := p;
+	act := l;
+	while (act <> nil) and (act^.dato.code < p.code) do begin 
+		ant := act;
+		act := act^.sig;
+	end;
+	if (act = l) then 
+		l := nue
+	else
+		ant^.sig := nue;
+	nue^.sig := act;
+end;
+
+procedure inicializarvector(var v: vector);
+var
+	i: rangorubro;
+begin 
+	for i := 1 to dfrubro do 
+		v[i] := nil;
+end;
+
+procedure cargardatos(var v: vector);
+var
+	p: producto;
+begin
+	inicializarvector(v);
+	leerproducto(p);
+	while (p.precio <> corte) do begin 
+		insertarordenado(v[p.coderubro], p);
+		leerproducto(p);
+	end;
+end;	
+procedure imprimolista(l: lista);
+begin 
+	if (l = nil) then 
+		writeln('no tiene elementos')
+	else 
+		while (l <> nil) do begin 
+			writeln(' es: ', l^.dato.code);
+			l := l^.sig;
+		end;
+end;
+		
+procedure imprimocodesprods(v: vector);
+var
+	i: rangorubro;
+begin
+	for i := 1 to dfrubro do begin
+		writeln('El codigo de producto del rubro ', i);
+		imprimolista(v[i]);
+	end;
+end;
+
+
+procedure incisoC(v: vector; var v2: vector2; var dimlog: integer);
+var
+	aux: lista;
+begin
+	aux := v[3];
+	while (aux <> nil) and (dimlog < dfvector) do begin 
+		dimlog := dimlog + 1;
+		v2[dimlog]  := aux^.dato;
+		aux := aux^.sig;
+	end;
+end;
+
+procedure ordenoporseleccion(var v2: vector2; dimlog: integer);
+var
+    item: producto;
+    i, j, pos: rangovector;
+begin
+    for i := 1 to (dimlog - 1) do begin 
+        pos := i;
+        for j:= (i + 1) to dimlog do 
+            if (v2[j].precio < v2[pos].precio) then 
+                pos := j;
+        item := v2[pos];
+        v2[pos] := v2[i];
+        v2[i] := item;
+    end;
+end;
+    
+procedure imprimoprecios(v2: vector2; dimlog: integer);
+var
+    i: rangovector;
+begin
+    for i := 1 to dimlog do   
+        writeln('El precio del producto ', i , 'es: ', v2[i].precio:0:2);
+end;
+    
+procedure recorroparapromedio(v2: vector2; dimlog: integer);
+var
+    i: rangovector;
+    acumulo: real;
+begin
+    acumulo := 0;
+    for i := 1 to dimlog do 
+        acumulo := acumulo + v2[i].precio;
+    writeln('El promedio de los precios será: ', acumulo/dimlog:0:2);
+end;
+    
+//programa principal
+var
+	v: vector;
+	v2: vector2;
+	dimlog: integer;
+begin
+	cargardatos(v);
+	imprimocodesprods(v);
+	dimlog := 0;
+	incisoC(v, v2, dimlog);
+	if (dimlog > 0) then begin  
+	    ordenoporseleccion(v2, dimlog);
+	    imprimoprecios(v2, dimlog);
+	    recorroparapromedio(v2, dimlog);
+	end;
+end.
