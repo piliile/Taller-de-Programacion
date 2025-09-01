@@ -1,1 +1,155 @@
+{3.- Netflix ha publicado la lista de películas que estarán disponibles durante el mes de
+septiembre de 2025. De cada película se conoce: código de película, código de género (1:
+acción, 2: aventura, 3: drama, 4: suspenso, 5: comedia, 6: bélico, 7: documental y 8: terror) y
+puntaje promedio otorgado por las críticas.
+Implementar un programa que invoque a módulos para cada uno de los siguientes puntos:
+a. Lea los datos de películas, los almacene por orden de llegada y agrupados por código de
+género, y retorne en una estructura de datos adecuada. La lectura finaliza cuando se lee el
+código de la película -1.
+b. Genere y retorne en un vector, para cada género, el código de película con mayor puntaje
+obtenido entre todas las críticas, a partir de la estructura generada en a)..
+c. Ordene los elementos del vector generado en b) por puntaje utilizando alguno de los dos
+métodos vistos en la teoría.
+d. Muestre el código de película con mayor puntaje y el código de película con menor puntaje,
+del vector obtenido en el punto c).}
+{3.- Netflix ha publicado la lista de películas que estarán disponibles durante el mes de
+diciembre de 2022. De cada película se conoce: código de película, código de género (1: acción,
+2: aventura, 3: drama, 4: suspenso, 5: comedia, 6: bélico, 7: documental y 8: terror) y puntaje
+promedio otorgado por las críticas.
+Implementar un programa que invoque a módulos para cada uno de los siguientes puntos:
+a. Lea los datos de películas, los almacene por orden de llegada y agrupados por código de
+género, y retorne en una estructura de datos adecuada. La lectura finaliza cuando se lee el
+código de la película -1. 
+b. Genere y retorne en un vector, para cada género, el código de película con mayor puntaje
+obtenido entre todas las críticas, a partir de la estructura generada en a)..
+c. Ordene los elementos del vector generado en b) por puntaje utilizando alguno de los dos
+métodos vistos en la teoría.
+d. Muestre el código de película con mayor puntaje y el código de película con menor puntaje,
+del vector obtenido en el punto c).
+}
+program ejercicio3;
+const 
+	dfgenero = 8;
+	corte = -1;
+type
+	rangogenero = 1..dfgenero;
+	
+	pelicula = record
+		codigo: integer;
+		genero: rangogenero;
+		puntajeprom: real;
+	end;
+	
+	lista = ^nodo;
+	nodo = record
+		dato: pelicula;
+		sig: lista;
+	end;
+	
+	vector = array [rangogenero] of lista;
+	
+	vectorult = array [rangogenero] of lista;
+	
+	vectorcontador = array [rangogenero] of integer;
+
+//modulos
+
+procedure leerpelicula(var p: pelicula);
+begin 
+	readln(p.codigo);
+	if (p.codigo <> corte) then begin 
+		readln(p.genero);
+		readln(p.puntajeprom);
+	end;
+end;
+
+procedure agregaratras(var l, ult: lista; p: pelicula); // que recibe ult??
+var
+	nue: lista;
+begin
+	new(nue);
+	nue^.dato := p;
+	nue^.sig := nil;
+	if (l = nil) then 
+		l := nue;
+	else
+		ult^.sig := nue;
+	ult := nue;
+end;
+
+procedure inicializarvec(var v: vector; var vu:vectorult);
+var
+	i: rangogenero;
+begin
+	for i := 1 to dfgenero do begin 	
+		v[i] := nil;
+		vu[i]:=nil;
+    end;
+end;
+
+procedure cargardatos(var v: vector; var vu: vectorult);
+var
+	p: pelicula;
+begin
+	inicializarvec(v);
+	leerpelicula(p);
+	while (p.codigo <> corte) do begin 
+		agregaratras(v[p.genero], vu[p.genero],p); // que paso para que reciba ult?
+		leerpelicula(p);
+	end;
+end;
+
+function maximocodigo(l: lista): integer;
+var
+	max: real; 
+	codemax: integer;
+begin 
+	max := - 1;
+	while (l <> nil) do begin 
+		if (l^.dato.puntaje > max) then begin 
+			max := l^.dato.puntaje;
+			codemax := l^.dato.codigo;
+		end;
+		l := l^.sig;
+	end;
+end;
+procedure obtengomaximo(v: vector; var vc: vectorcontador);
+var
+begin
+	for i := 1 to dfgenero do begin
+			vc[i] := maximocodigo(v[i]);
+end;
+
+procedure ordenoporseleccion(var vc: vectorcontador); // el vc no tiene nada de puntaje, el inciso solo dice que tenga el codigo con mayor puntaje.
+var
+	i, j, pos : rangogenero;
+	item: integer;  
+begin 
+	for i := 1 to 7 do begin 
+		pos := i;
+		for j := (i + 1) to dfgenero do 
+			if (vc[j.puntaje < vc[pos].puntaje) then 
+				pos := j;
+		item := v[pos];
+		v[pos] :=v[i];
+		v[i] := item;
+	end;
+end;
+// d. Muestre el código de película con mayor puntaje y el código de película con menor puntaje, del vector obtenido en el punto c). 
+procedure mostrarmenorymayor(vc: vectorcontador);
+begin
+	writeln('El codigo de pelicula con menor puntaje es: ', vc[1]);
+	writeln('El codigo de pelicula con mayor puntaje es: ', vc[8]); 
+end;
+
+//programa principal
+var
+	v: vector;
+	vc: vectorcontador;
+begin
+	cargardatos(v);
+	obtengomaximo(v, vc);
+	ordenoporseleccion(vc);
+	mostrarmenorymayor(vc);
+end.
 
