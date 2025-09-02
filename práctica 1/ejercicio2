@@ -1,1 +1,93 @@
+{2.- El administrador de un edificio de oficinas cuenta, en papel, con la información del pago de
+las expensas de dichas oficinas.
+Implementar un programa que invoque a módulos para cada uno de los siguientes puntos:
+a. Genere un vector, sin orden, con a lo sumo las 300 oficinas que administra. De cada oficina
+se ingresa el código de identificación, DNI del propietario y valor de la expensa. La lectura
+finaliza cuando se ingresa el código de identificación -1, el cual no se procesa.
+b. Ordene el vector, aplicando el método de inserción, por código de identificación de la
+oficina.
+c. Ordene el vector aplicando el método de selección, por código de identificación de la oficina}
+program ejercicio2clase1moduloimp;
+const 
+	dfOfi = 300;
+	corte = -1;
+type
+	rangoOficinas = 1..dfOfi;
+	
+	oficina = record
+		codeId: integer;
+		dniProp: integer;
+		valorExp: real;
+	end;
+	
+	vectorOficinas = array [rangoOficinas] of oficina;
+	
 
+procedure leerOficina(var o: oficina);
+begin 
+  writeln('Ingrese codigo de oficina: ');
+	readln(o.codeId);
+	if (o.codeId <> corte) then begin
+	  writeln('Ingrese DNI del propietario: ');
+    readln(o.dniProp);
+    writeln('Ingrese valor de expensa: ');
+	  readln(o.valorExp);
+	end;
+end;
+
+procedure cargarVectorOfis(var v: vectorOficinas; var dimL: integer);
+var
+	o: oficina;
+begin
+	dimL := 0;
+	leerOficina(o);
+	while (o.codeId <> corte) and (dimL < dfOfi) do begin 
+		dimL := dimL + 1;
+		v[dimL] := o;
+		leerOficina(o);
+	end;
+end;
+
+// b. Ordene el vector, aplicando el método de inserción, por código de identificación de la oficina.
+procedure insercion(var v: vectorOficinas; var dimL: rangoOficinas);
+	var
+		i, j: rangoOficinas; 
+		actual: oficina;
+	begin 
+		for i:= 2 to dimL do begin 
+			actual := v[i];
+			j := i - 1;
+			while (j > 0) and (v[j].codeId > actual.codeId) do begin 
+				v[j + 1] := v[j];
+				j := j - 1;
+			end;
+			v[j + 1] := actual;
+		end;
+	end;
+// c. Ordene el vector aplicando el método de selección, por código de identificación de la oficina.
+
+procedure seleccion(var v: vectorOficinas; dimL: rangoOficinas);
+	var
+		i, j, pos: integer;
+		item: oficina;
+	begin 
+		for i := 1 to (dimL -1) do begin 
+			pos := i;
+			for j := i + 1 to dimL do 
+				if (v[j].codeId < v[pos].codeId) then 
+					pos := j;
+			item := v[pos];
+			v[pos] := v[i];
+			v[i] := item;
+		end;
+	end; 
+// programa principal
+var
+	dimL: rangoOficinas;
+	vo: vectorOficinas;
+begin 
+	writeln('hola');
+	cargarVectorOfis(vo, dimL);
+	insercion(vo, dimL);
+	seleccion(vo, dimL);
+end.
