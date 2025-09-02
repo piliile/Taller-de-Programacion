@@ -1,0 +1,100 @@
+{Escribir un programa que:
+a. Implementar un modulo que almacene informacion de socios de un club en un arbol binario de busqueda. 
+De cada socio se debe almacenar numero de socio, nombre y edad. 
+La carga finaliza con el numero de socio 0 y el arbol debe quedar ordenado por numero de socio. 
+La informacion de cada socio debe generarse aleatoriamente.
+b. Una vez generado el arbol, realice modulos independientes que reciban el arbol como parametro para: 
+    i. Informar los datos de los socios en orden creciente.
+    ii. Informar los datos de los socios en orden decreciente.
+    iii. Informar el número de socio con mayor edad. Debe invocar a un módulo recursivo que retorne dicho valor.
+    iv. Aumentar en 1 la edad de los socios con edad impar e informar la cantidad de socios que se les aumento la edad.
+    vi. Leer un nombre e informar si existe o no existe un socio con ese nombre. Debe invocar a un módulo recursivo que reciba el nombre leído y retorne 
+    verdadero o falso.
+    vii. Informar la cantidad de socios. Debe invocar a un módulo recursivo que retorne dicha cantidad.
+    viii. Informar el promedio de edad de los socios. Debe invocar a un módulo recursivo que retorne el promedio de las edades de los socios.}
+program ejercicio1;
+const
+	corte = 0;
+
+type
+	socio = record 
+		numero: integer;
+		nombre: string;
+		edad: integer;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: socio;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	
+procedure cargarsocio(var s: socio);
+var
+	vNombres: array [0..9] of string = ('Pilar', 'Alejandra', 'Maria', 'Martin', 'Tomas', 'Lucia', 'Candela', 'Ines', 'Jazmin', 'Pedro'); 
+begin 
+	s.numero := random(100);
+	writeln('El numero aleatorio es: ', s.numero);
+	
+	if (s.numero <> corte) then begin 
+		s.nombre := vNombres[random(10)];
+		writeln('El nombre del socio es: ', s.nombre);
+		s.edad := random(100);
+		writeln('La edad del socio es: ', s.edad);
+	end;
+end;
+
+procedure agregar(var a: arbol; s: socio);
+begin	
+	if (a = nil) then begin 
+		new(a);
+		a^.dato := s;
+		a^.HI := nil;
+		a^.HD := nil;
+	end
+	else
+		if (s.numero <= a^.dato.numero)	then 
+			agregar(a^.HI, s)
+		else
+			agregar(a^.HD, s);
+end;
+
+procedure cargararbol(var a: arbol);
+var
+	s: socio;
+begin
+	cargarsocio(s);
+	while (s.numero <> corte) do begin 
+		agregar(a, s);
+		cargarsocio(s);
+	end;
+end;
+
+procedure imprimoEnOrden(a: arbol);
+begin
+	if (a <> nil) then begin
+		imprimoEnOrden(a^.HI);
+		writeln('El numero de socio es: ', a^.dato.numero, ', el nombre: ', a^.dato.nombre, '. Y la edad es: ', a^.dato.edad);
+		imprimoEnOrden(a^.HD);
+	end;
+end;
+
+
+
+
+
+
+// programa principal
+
+var
+	a: arbol;
+begin 
+	Randomize;
+	a := nil;
+	cargararbol(a); // A
+	writeln('El arbol impreso en orden quedaría de la siguiente manera: ');
+	imprimoEnOrden(a);
+end.
+
