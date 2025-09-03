@@ -39,7 +39,7 @@ begin
 		writeln('El numero en la posicion ', i , ' del vector, es: ', v[i]);
 end;
 
-procedure moduloimprimeArecursivo(v: vector; i, dimlog: integer);
+procedure moduloimprimeArecursivo(v: vector; i, dimlog: integer); //usar dimlog
 begin
 	if (i <= dimlog) then begin //check <=
 		writeln('El numero en la posicion', i , 'del vector, es: ', v[i]);
