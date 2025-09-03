@@ -26,3 +26,4 @@ begin
     conversionBinario(numero);
     numero := random(99);
   end;
+end.
