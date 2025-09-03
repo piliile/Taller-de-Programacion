@@ -112,7 +112,7 @@ begin
 	dimlog := 0;
 	moduloincisoA(v, dimlog); // A
 	moduloimprimeAnorecursivo(v, dimlog); // B
-	i := 1;
+	i := 1; // INNECESARIO USAR LA i, puedo usar dimlog
 	moduloimprimeArecursivo(v, i, dimlog); // C
 
 	sumatotal := sumatotalD(v, i, dimlog); // D
