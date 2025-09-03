@@ -1,0 +1,132 @@
+{1.- Implementar un programa que invoque a los siguientes modulos.
+a. Un modulo recursivo que retorne un vector de a lo sumo 15 numeros enteros random mayores a 10 y menores a 155 (incluidos ambos). La carga finaliza con 
+el valor 20.
+b. Un modulo no recursivo que reciba el vector generado en a) e imprima el contenido del vector.
+c. Un modulo recursivo que reciba el vector generado en a) e imprima el contenido del vector.
+d. Un modulo recursivo que reciba el vector generado en a) y devuelva la suma de los valores pares contenidos en el vector.
+e. Un modulo recursivo que reciba el vector generado en a) y devuelva el maximo valor del vector.
+f. Un modulo recursivo que reciba el vector generado en a) y un valor y devuelva verdadero si dicho valor se encuentra en el vector o falso en caso contrario.
+g. Unmodulo que reciba el vector generado en a) e imprima, para cada numero contenido en el vector, sus digitos en el orden en que aparecen en el numero. 
+Debe implementarse un modulo recursivo que reciba el numero e imprima lo pedido. Ejemplo si se lee el valor 142, se debe imprimir 1  4  2
+}
+program ejercicio1;
+const
+	dfvector = 15;
+	corte = 20;
+
+type
+	rangovector = 1..dfvector;
+	
+	vector = array [rangovector] of integer;
+	
+procedure moduloincisoA(var v: vector; var dimlog: integer);
+var
+	aleatorio: integer;
+begin
+	aleatorio := random(146) + 10;
+	if (aleatorio <> corte) and (dimlog < dfvector) then begin 
+		dimlog := dimlog + 1;
+		v[dimlog] := aleatorio;
+		moduloincisoA(v, dimlog);	
+	end;
+end;
+
+procedure moduloimprimeAnorecursivo(v: vector; dimlog: integer);
+var
+	i: rangovector;
+begin
+	for i := 1 to dimlog do 
+		writeln('El numero en la posicion ', i , ' del vector, es: ', v[i]);
+end;
+
+procedure moduloimprimeArecursivo(v: vector; dimlog: integer); //usar dimlog
+begin
+	if (dimlog <> 0) then begin //check <=
+		dimlog := dimlog + 1;
+		moduloimprimeArecursivo(v, dimlog - 1);		
+		writeln('El numero en la posicion', dimlog , 'del vector, es: ', v[dimlog]);
+
+	end;
+end;
+
+function sumatotalD(v: vector; pos, dimlog: rangovector): integer;
+begin 
+	if (pos > dimlog) then 
+		sumatotalD := 0
+	else 
+		if ((v[pos] mod 2 )= 0) then  
+			sumatotalD := v[pos] + sumatotalD(v, pos + 1, dimlog)
+		else
+			sumatotalD := sumatotalD(v, pos + 1, dimlog);
+end;
+
+procedure buscomaximoE(v: vector; pos, dimlog: integer; var maximovalor: integer);
+begin
+	if (dimlog = pos) then // si está en el 1
+		maximovalor := v[pos] // será el unico maximo
+	else 	
+		if (pos <= dimlog) then begin 
+			if (maximovalor < v[pos]) then  
+				maximovalor := v[pos];
+			buscomaximoE(v, pos + 1, dimlog, maximovalor);
+		end;
+end;
+
+function buscarvalorF(v: vector; dimlog, valor: integer): boolean;
+begin
+	if (dimlog > 0) then begin 
+		if(v[dimlog] = valor) then 				
+			buscarvalorF := true
+		else
+			buscarvalorF := buscarvalorF(v, dimlog + 1, valor);
+	end
+	else
+		buscarvalorF := false; // si llega al final del vector (pos > dimlog), es porque el elemento a buscar NO está
+end;
+
+procedure digitos(num: integer);
+begin 
+	if (num < 10) then 
+		writeln(num)
+	else begin
+		digitos(num div 10);
+		writeln(num mod 10);
+	end;
+end;
+procedure imprimir(v: vector; dimlog: integer);
+begin 
+	if (dimlog <> 0) then begin
+		writeln('El número: ', v[dimlog], ' descomponiendolo, quedaria: ');
+		digitos(v[dimlog]);
+	end;
+end;
+			
+// programa principal
+var
+	v: vector;
+	dimlog, maximovalor, valor: integer;
+	sumatotal: integer;
+	encontre: boolean;
+begin
+	Randomize;
+	dimlog := 0;
+	moduloincisoA(v, dimlog); // A
+	// INNECESARIO USAR LA i, puedo usar dimlog
+	if (dimlog = 0) then 
+		writeln('El vector no tiene elementos.')
+	else begin
+		moduloimprimeAnorecursivo(v, dimlog); // B
+		moduloimprimeArecursivo(v, dimlog); // C
+	end;
+	sumatotal := sumatotalD(v, 1, dimlog); // D
+	writeln('La suma total de los numeros pares del vector es: ', sumatotal);
+	maximovalor := -1;
+	buscomaximoE(v, 1, dimlog, maximovalor); // E
+	writeln('El maximo valor será: ', maximovalor);
+// f. Un modulo recursivo que reciba el vector generado en a) y un valor y devuelva verdadero si dicho valor se encuentra en el vector o falso en caso contrario.
+	writeln('Ingrese el valor para buscarlo en el vector de manera recursiva: ');
+	readln(valor);
+	encontre := buscarvalorF(v, dimlog, valor); 
+	writeln('El valor: ', valor, ' tiene resultado booleano: ', encontre);
+	imprimir(v, dimlog);
+end.
