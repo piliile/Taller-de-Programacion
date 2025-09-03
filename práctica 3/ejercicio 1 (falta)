@@ -7,11 +7,13 @@ b. Una vez generado el arbol, realice modulos independientes que reciban el arbo
     i. Informar los datos de los socios en orden creciente.
     ii. Informar los datos de los socios en orden decreciente.
     iii. Informar el número de socio con mayor edad. Debe invocar a un módulo recursivo que retorne dicho valor.
-    iv. Aumentar en 1 la edad de los socios con edad impar e informar la cantidad de socios que se les aumento la edad.
-    vi. Leer un nombre e informar si existe o no existe un socio con ese nombre. Debe invocar a un módulo recursivo que reciba el nombre leído y retorne 
-    verdadero o falso.
+    iv. Aumentar en 1 la edad de los socios con edad impar e informar la cantidad de socios que se les aumento 
+    la edad.
+    vi. Leer un nombre e informar si existe o no existe un socio con ese nombre. Debe invocar a un módulo recursivo 
+    que reciba el nombre leído y retorne verdadero o falso.
     vii. Informar la cantidad de socios. Debe invocar a un módulo recursivo que retorne dicha cantidad.
-    viii. Informar el promedio de edad de los socios. Debe invocar a un módulo recursivo que retorne el promedio de las edades de los socios.}
+    viii. Informar el promedio de edad de los socios. Debe invocar a un módulo recursivo que retorne 
+    el promedio de las edades de los socios.}
 program ejercicio1;
 const
 	corte = 0;
@@ -115,15 +117,13 @@ begin
 	end;
 end;	
 			
-{function buscoNombre(a: arbol; name: string): boolean;      ¿¿Por qué así no me anda??
+{function buscoNombre(a: arbol; name: string): boolean;     MEJOR QUE PROCEDURE buscoNombre (yo hacia bN:= con HI y despues bN := con HD, eso no se puede)
 begin
 	if (a <> nil) then begin 
 		if (a^.dato.nombre = name) then 
 			buscoNombre := true
-		else begin
-			buscoNombre := buscoNombre(a^.HI, name);
-			buscoNombre := buscoNombre(a^.HD, name);
-		end;
+		else 
+			buscoNombre := buscoNombre(a^.HI, name) OR buscoNombre(a^.HD, name); 
 	end
 	else
 		buscoNombre := false;
@@ -151,13 +151,22 @@ begin
 		cantidadtotalsocios := 1 + cantidadtotalsocios(a^.HI) + cantidadtotalsocios(a^.HD);
 end;	
 
-function sumatotalsocios(a: arbol): integer;
+function sumaEdadesSocios(a: arbol): integer;
 begin 
 	if (a = nil) then
-		sumatotalsocios := 0
+		sumaEdadesSocios := 0
 	else 
-		sumatotalsocios := a^.dato.edad + sumatotalsocios(a^.HI) + cantidadtotalsocios(a^.HD);
+		sumaEdadesSocios := a^.dato.edad + sumaEdadesSocios(a^.HI) + sumaEdadesSocios(a^.HD);
 end;	
+
+function promedio(a: arbol): real;
+begin 
+	if (a = nil) then 
+		promedio := 0
+	else
+		promedio := sumaEdadesSocios(a)/cantidadtotalsocios(a);
+end;
+
 // programa principal
 
 var
@@ -191,4 +200,5 @@ begin
 	
 	writeln('La cantidad de socios es: ', cantidadtotalsocios(a));
 	
+	writeln('El promedio de edad de los socios es: ', promedio(a):0:2);
 end.
