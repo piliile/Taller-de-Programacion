@@ -1,1 +1,28 @@
+program ejercicio4;
+const
+  corte = 0;
 
+type
+  procedure conversionBinario(dig: integer); 
+  var
+    resultado: integer;
+  begin
+    resultado:=0;
+    if (dig <> corte) then begin
+      resultado := dig mod 2;
+      conversionBinario(dig div 2);
+    end;
+    write(resultado);
+  end;
+
+// programa principal
+var
+  numero: integer;
+begin
+  Randomize;
+  numero := random(99);
+  while (numero <> corte) do begin
+    write('La conversion a binario es: ');
+    conversionBinario(numero);
+    numero := random(99);
+  end;
