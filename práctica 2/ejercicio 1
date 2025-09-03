@@ -19,6 +19,7 @@ type
 	
 	vector = array [rangovector] of integer;
 	
+	
 procedure moduloincisoA(var v: vector; var dimlog: integer);
 var
 	aleatorio: integer;
@@ -30,7 +31,6 @@ begin
 		moduloincisoA(v, dimlog);	
 	end;
 end;
-
 procedure moduloimprimeAnorecursivo(v: vector; dimlog: integer);
 var
 	i: rangovector;
@@ -39,91 +39,92 @@ begin
 		writeln('El numero en la posicion ', i , ' del vector, es: ', v[i]);
 end;
 
-procedure moduloimprimeArecursivo(v: vector; i, dimlog: integer); //usar dimlog
+procedure moduloimprimeArecursivo(v: vector; dimlog: integer);
 begin
-	if (i <= dimlog) then begin //check <=
-		writeln('El numero en la posicion', i , 'del vector, es: ', v[i]);
-		i := i + 1;
-		moduloimprimeArecursivo(v, i, dimlog);
+	if (dimlog > 0) then begin 
+		moduloimprimeArecursivo(v, dimlog - 1);		
+		writeln('El numero en la posicion', dimlog , 'del vector, es: ', v[dimlog]);
 	end;
 end;
 
-function sumatotalD(v: vector; i, dimlog: rangovector): integer;
-begin 
-	if (i > dimlog) then 
-		sumatotalD := 0
-	else 
-		if ((v[i] mod 2 )= 0) then  
-			sumatotalD := v[i] + sumatotalD(v, i + 1, dimlog)
+function sumatotalD(v: vector; dimlog: integer): integer;
+begin
+	if (dimlog <> 0) then 
+		if (v[dimlog] mod 2 = 0) then 
+			sumatotalD := v[dimlog] + sumatotalD(v, dimlog -1)
 		else
-			sumatotalD := sumatotalD(v, i + 1, dimlog);
+			sumatotalD := sumatotalD(v, dimlog - 1)
+	else
+		sumatotalD := 0;
 end;
 
-procedure buscomaximoE(v: vector; i, dimlog: integer; var maximovalor: integer);
+function buscomaximoE(v: vector; dimlog: integer): integer;
 begin
-	if (i <= dimlog) then begin 
-		if (maximovalor < v[i]) then  
-			maximovalor := v[i];
-		i := i + 1;
-		buscomaximoE(v, i, dimlog, maximovalor);
-	end;
+	if (dimlog <> 0) then 
+		if (dimlog = 1) then 
+			buscomaximoE := v[dimlog]
+		else begin 
+			buscomaximoE := buscomaximoE(v, dimlog -1);
+			if (v[dimlog] > buscomaximoE) then 
+				buscomaximoE := v[dimlog];
+		end;
 end;
 
-function buscarvalorF(v: vector; i, dimlog, valor: integer): boolean;
-begin
-	if (i <= dimlog) then begin 
-		if(v[i] = valor) then 				
+function  buscarvalorF(v: vector; dimlog, valor: integer): boolean;
+begin 
+	if (dimlog <> 0) then 
+		if (v[dimlog] = valor) then 
 			buscarvalorF := true
 		else
-			buscarvalorF := buscarvalorF(v, i + 1, dimlog, valor);
-	end
+			buscarvalorF := buscarvalorF(v, dimlog - 1, valor)
 	else
-		buscarvalorF := false; // si llega al final del vector (i > dimlog), es porque el elemento a buscar NO está
+		buscarvalorF := false;
 end;
 
-procedure digitos(num: integer);
+procedure desarmo(num: integer);
 begin 
 	if (num < 10) then 
 		writeln(num)
 	else begin
-		digitos(num div 10);
+		desarmo(num div 10);
 		writeln(num mod 10);
 	end;
 end;
-procedure imprimir(v: vector; dimlog: integer);
-var
-	i: rangovector;
-begin 
-	for i := 1 to dimlog do begin 	
-		writeln('El número: ', v[i], ' descomponiendolo, quedaria: ');
-		digitos(v[i]);
+
+procedure imprimodigitos(v: vector; dimlog: integer);
+begin
+	if (dimlog <> 0) then begin
+		writeln('El número: ', v[dimlog], ' desarmado quedaría de la siguiente manera: ');
+		desarmo(v[dimlog]);
+		imprimodigitos(v, dimlog - 1);
 	end;
 end;
-			
-// programa principal
+
 var
 	v: vector;
-	i: rangovector;
-	dimlog, maximovalor, valor: integer;
-	sumatotal: integer;
-	encontre: boolean;
+	dimlog, suma, maximo, valor: integer;
+	resultado: boolean;
 begin
 	Randomize;
 	dimlog := 0;
 	moduloincisoA(v, dimlog); // A
-	moduloimprimeAnorecursivo(v, dimlog); // B
-	i := 1; // INNECESARIO USAR LA i, puedo usar dimlog
-	moduloimprimeArecursivo(v, i, dimlog); // C
-
-	sumatotal := sumatotalD(v, i, dimlog); // D
-	writeln('La suma total de los numeros pares del vector es: ', sumatotal);
-	maximovalor := -1;
-	buscomaximoE(v, i, dimlog, maximovalor); // E
-	writeln('El maximo valor será: ', maximovalor);
-// f. Un modulo recursivo que reciba el vector generado en a) y un valor y devuelva verdadero si dicho valor se encuentra en el vector o falso en caso contrario.
-	writeln('Ingrese el valor para buscarlo en el vector de manera recursiva: ');
-	readln(valor);
-	encontre := buscarvalorF(v, i, dimlog, valor); 
-	writeln('El valor: ', valor, ' tiene resultado booleano: ', encontre);
-	imprimir(v, dimlog);
+	if (dimlog = 0) then 
+		writeln('El vector no tiene elementos.')
+	else begin
+		moduloimprimeAnorecursivo(v, dimlog); // B
+		moduloimprimeArecursivo(v, dimlog); // C
+		
+		suma := sumatotalD(v, dimlog); // D
+		writeln('La suma de los pares es: ', suma);
+		
+		maximo := buscomaximoE(v, dimlog); // E
+		writeln('El valor máximo es: ', maximo);
+		
+		writeln('Ingrese un valor para buscarlo en el vector: ');
+		readln(valor);
+		resultado := buscarvalorF(v, dimlog, valor); // F
+		writeln('El resultado de la búsqueda es: ', resultado);
+		
+		imprimodigitos(v, dimlog);
+	end;
 end.
