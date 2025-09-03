@@ -16,110 +16,130 @@ mayor) de cada código par de producto junto a la cantidad total de productos ve
 h. Un módulo que muestre la información obtenida en el punto g).}
 program ejercicioUnoModuloImperativo;
 const
-	dfventa = 50;
-	dfcodigo = 15;
-	dfdia = 31;
-	dfcantidadvendida = 99;
+dfventa = 50;
+dfcodigo = 15;
+dfdia = 31;
+dfcantidadvendida = 99;
 type
-	rangocodeprod = 1..dfcodigo;
-	rangoventas = 1..dfventa;
-	rangocantvendida = 0..dfcantidadvendida;
-	rangodia = 0..dfdia;
-	
-	venta = record
-		dia: rangodia;
-		codeprod: rangocodeprod;
-		cantvendida: integer; // cantidad total de productos vendidos
-	end;
-	
-	
-	vector = array[rangoventas] of venta;
-	
-	vectorproductos = array[rangocodeprod] of integer;
-	
+rangocodeprod = 1..dfcodigo;
+rangoventas = 1..dfventa;
+rangocantvendida = 0..dfcantidadvendida;
+rangodia = 0..dfdia;
+
+venta = record
+dia: rangodia;
+codeprod: rangocodeprod;
+cantvendida: integer; // cantidad total de productos vendidos
+end;
+
+
+vector = array[rangoventas] of venta;
+
+vectorproductos = array[rangocodeprod] of integer;
+
 procedure leerVenta(var v: venta);
-begin 
-	writeln('Ingrese el día de la venta: ');
-	readln(v.dia);
-	if (v.dia <> 0) then begin 
-		v.codeprod := random(15) + 1; //invoco a la funcion random y le paso el parametro 15, la funcion random genera un valor aleatorio entre 0 y 
-		//el parametro -1 (0 y 14) si a un numero entre 0 y 14 le sumo uno va a generar un numero entre - 1 y 15 (rango de los productos).
-		writeln('El codigo de producto es: ', v.codeprod);
-		writeln('Ingrese la cantidad vendida, debe ser hasta 99: ');
-		readln(v.cantvendida);
-	end;
+begin
+writeln('Ingrese el día de la venta: ');
+readln(v.dia);
+if (v.dia <> 0) then begin
+v.codeprod := random(15) + 1; //invoco a la funcion random y le paso el parametro 15, la funcion random genera un valor aleatorio entre 0 y
+//el parametro -1 (0 y 14) si a un numero entre 0 y 14 le sumo uno va a generar un numero entre - 1 y 15 (rango de los productos).
+writeln('El codigo de producto es: ', v.codeprod);
+writeln('Ingrese la cantidad vendida, debe ser hasta 99: ');
+readln(v.cantvendida);
+end;
 end;
 
 
 procedure cargarventas(var v: vector; var dimL: integer);
-var 
-	vent: venta;
+var
+vent: venta;
 begin
-	dimL := 0;
-	leerVenta(vent);
-	while (vent.dia <> 0) do begin 
-		dimL := dimL +1;
-		v[dimL] := vent;
-		leerVenta(vent);
-	end;
+dimL := 0;
+leerVenta(vent);
+while (vent.dia <> 0) do begin
+dimL := dimL +1;
+v[dimL] := vent;
+leerVenta(vent);
+end;
 end;
 
 
 procedure imprimirvector(v: vector; dimL: integer);
 var
-	i: rangoventas;
+i: rangoventas;
 begin
-	for i := 1 to dimL do begin
-		writeln('El dia de la venta es: ', v[i].dia);
-		writeln('El codigo de producto es: ', v[i].codeprod);
-		writeln('La cantidad vendida fue de: ', v[i].cantvendida);
-	end;
+for i := 1 to dimL do begin
+writeln('El dia de la venta es: ', v[i].dia);
+writeln('El codigo de producto es: ', v[i].codeprod);
+writeln('La cantidad vendida fue de: ', v[i].cantvendida);
+end;
 end;
 
 procedure ordenovectorporseleccion(var v: vector; dimL: integer);
 var
-	item: venta;
-	i, j, pos: rangoventas;
+item: venta;
+i, j, pos: rangoventas;
 begin
-	for i := 1 to (dimL - 1) do begin 
-		pos := i;
-		for j := (i + 1) to dimL do 
-			if (v[j].codeprod < v[pos].codeprod) then 
-				pos := j;
-		item := v[pos];
-		v[pos] := v[i];
-		v[i] := item;
-	end;
+for i := 1 to (dimL - 1) do begin
+pos := i;
+for j := (i + 1) to dimL do
+if (v[j].codeprod < v[pos].codeprod) then
+pos := j;
+item := v[pos];
+v[pos] := v[i];
+v[i] := item;
+end;
 end;
 
-procedure eliminarincisoE(var v: vector; var dimL: integer; var pude: boolean; pos: rangoventas);
+{procedure eliminarincisoE(var v: vector; var dimL: integer; var pude: boolean; pos: integer);
 var
-	i: rangoventas;
+i: rangoventas;
 begin
-	if (pos >= 1) and (pos <= dimL) then begin 
-		for i := pos to (dimL - 1) do
-			v[i] := v[i + 1];
-		pude := true;
-		dimL := dimL - 1;
-	end;
-end;	
-	
-procedure recorroparaeliminar(var v: vector; var dimL: integer; valor1, valor2: rangocodeprod); // aca va por referencia el vector y diml?
+if (pos >= 1) and (pos <= dimL) then begin
+for i := pos to (dimL - 1) do
+v[i] := v[i + 1];
+pude := true;
+dimL := dimL - 1;
+end;
+end; }
+
+procedure recorroparaeliminar(var v: vector; var dimL: integer; valor1, valor2: rangocodeprod); // aprovecho el orden. no se eliminan uno x uno
 var
-	i: rangoventas;
-	pude: boolean;
+i, indiceizquierda, indicederecha, salto: integer;
+
+{pude: boolean;}
 begin
-	pude := false;
-	for i := 1 to dimL do 	
-		if (v[i].codeprod > valor1) and (v[i].codeprod < valor2) then 
-			eliminarincisoE(v, dimL, pude, i);
+i := 1;
+while (i < dimL) and (v[i].codeprod < valor1) do
+i := i + 1;
+indiceizquierda := i;
+
+while (i < dimL) and (v[i].codeprod <= valor2) do
+i := i + 1;
+indicederecha := i;
+
+salto := (indicederecha - indiceizquierda);
+
+while (indiceizquierda + salto) <= dimL do begin
+v[indiceizquierda] := v[indiceizquierda + salto];
+indiceizquierda := indiceizquierda + 1;
+end;
+
+
+dimL := dimL - salto;
+{pude := false;
+for i := 1 to dimL do
+if (v[i].codeprod > valor1) and (v[i].codeprod < valor2) then
+eliminarincisoE(v, dimL, pude, i);}
+
 end;
 
 procedure inicializarvectorprods(var vp: vectorproductos);
 var
     i: rangocodeprod;
 begin
-    for i := 1 to dfcodigo do 
+    for i := 1 to dfcodigo do
         vp[i] := 0;
 end;
 
@@ -137,34 +157,34 @@ procedure imprimovectorprods(vp: vectorproductos);
 var
     i: rangocodeprod;
 begin
-    for i := 1 to dfcodigo do 
+    for i := 1 to dfcodigo do
         writeln('El codigo de producto ', i, 'tiene un total de ventas de: ', vp[i]);
 end;
 
 // programa principal
 var
-	v: vector;
-	dimL: integer;
-	valoruno, valordos: rangocodeprod;
-	vp: vectorproductos;
-	
-begin 
-	Randomize; // inicializa una secuencia de numeros aleatorios. 
-	cargarventas(v, dimL); // A 
-	imprimirvector(v, dimL); // B 
-	writeln('El vector ordenado por codigo de producto quedaría de esta manera: ');
-	ordenovectorporseleccion(v, dimL); // C, no se ordena
-	imprimirvector(v, dimL); // D
-	
-	writeln('Ingrese el valor 1: ');
-	readln(valoruno);
-	writeln('Ingrese el valor 2: ');
-	readln(valordos);
-	recorroparaeliminar(v, dimL, valoruno, valordos); // E, no elimina bien
-	
-	writeln('Los valores que quedaron son: ');
-	imprimirvector(v, dimL); // F
-	
+v: vector;
+dimL: integer;
+valoruno, valordos: rangocodeprod;
+vp: vectorproductos;
+
+begin
+Randomize; // inicializa una secuencia de numeros aleatorios.
+cargarventas(v, dimL); // A
+imprimirvector(v, dimL); // B
+writeln('El vector ordenado por codigo de producto quedaría de esta manera: ');
+ordenovectorporseleccion(v, dimL); // C, no se ordena
+imprimirvector(v, dimL); // D
+
+writeln('Ingrese el valor 1: ');
+readln(valoruno);
+writeln('Ingrese el valor 2: ');
+readln(valordos);
+recorroparaeliminar(v, dimL, valoruno, valordos); // E, no elimina bien
+
+writeln('Los valores que quedaron son: ');
+imprimirvector(v, dimL); // F
+
     cargarvectorprods(v, vp, dimL); // G
     imprimovectorprods(vp); // H
 end.
