@@ -6,3 +6,134 @@ ingresar el cliente 1000.
 2. Leer un código de cliente e informar la cantidad de correos sin leer.
 3. Imprimir todos los códigos de cliente de mayor a menor.
 4. Leer una dirección de correo e informar si existe un cliente con esa dirección.}
+
+program ejemplo1;
+const
+	dfcode = 1000;
+	
+type
+	rangocodigo = 1..dfcode;
+	cliente = record
+		codigo: rangocodigo;
+		direccionemail: string;
+		correosinleer: integer;
+	end;
+	
+	arbolClientes =^nodoClientes;
+	nodoClientes = record
+		dato: cliente;
+		HI: arbolClientes;
+		HD: arbolClientes;
+	end;
+	
+	procedure leercliente(var c: cliente);
+	begin 
+		writeln('Ingrese el número de código del cliente, debe ser entre 1 y 1000: ');
+		readln(c.codigo);
+		writeln('Ingrese la dirección de email del cliente: ');
+		readln(c.direccionemail);
+		writeln('Ingrese la cantidad de correos sin leer del cliente: ');
+		readln(c.correosinleer);
+	end;
+	
+	procedure agregar(var a: arbolClientes; c: cliente);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato := c;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin 
+			if (c.codigo < a^.dato.codigo) then 
+				agregar(a^.HI, c)
+			else
+				agregar(a^.HD, c);
+		end;
+	end;
+	
+	procedure cargarArbolClientes(var a: arbolClientes);
+	var
+		c: cliente;
+	begin
+		repeat
+			leercliente(c);
+			agregar(a, c);
+		until(c.codigo = dfcode)
+	end;
+	
+	function cantnoleidos(a: arbolClientes; c: integer): integer;
+		procedure buscoCantidad(a: arbolClientes; c: integer; var cant: integer);
+		begin 
+			if (a = nil) then 
+				cant := 0
+			else begin
+				if (a^.dato.codigo = c) then 
+					cant := a^.dato.correosinleer
+				else begin
+					if (a^.dato.codigo > c) then 
+						buscoCantidad(a^.HI, c, cant)
+					else
+						buscoCantidad(a^.HD, c, cant);
+				end;
+			end;
+		end;
+	var
+		cant: integer;	
+	begin 
+		cant := 0;
+		buscoCantidad(a, c, cant);
+		cantnoleidos := cant;
+	end;
+	
+	procedure imprimirNumeros(a: arbolClientes);
+	begin 
+		if (a <> nil) then begin 
+			imprimirNumeros(a^.HD);
+			writeln(a^.dato.codigo);
+			imprimirNumeros(a^.HI);
+		end;
+	end;
+	
+	function retornoValor(a: arbolClientes; dir: string): boolean;
+		procedure buscoDireccion(a: arbolClientes; d: string; var ok: boolean);
+		begin 
+			if (a = nil) then  
+				ok := false
+			else begin
+					if (a^.dato.direccionemail = d) then 
+						ok := true
+					else
+						buscoDireccion(a^.HI, d, ok);
+						if (not ok) then 
+							buscoDireccion(a^.HD, d, ok);
+			end;
+		end;
+	
+	var
+		ok: boolean;
+	begin 
+		ok := false;
+		buscoDireccion(a, dir, ok);
+		retornoValor := ok;
+	end;
+	
+// programa principal
+var
+	a: arbolClientes;
+	code: integer;
+	direccion: string;
+begin
+	cargarArbolClientes(a);
+
+	writeln('Ingrese un código para buscar la cantidad de correos sin leer del cliente correspondiente al código: ');
+	readln(code);
+	writeln('La cantidad de correos sin leer del cliente con código: ', code, ' es: ', cantnoleidos(a, code));
+	
+	writeln('Los números de cliente impresos de mayor a menor quedarían de la siguiente manera: ');
+	imprimirNumeros(a);
+	
+	writeln('Ingrese una dirección de correo para buscarla en el arbol: ');
+	readln(direccion);
+	writeln('El resultado de si hay un cliente con esa dirección es: ', retornoValor(a, direccion));
+end.
