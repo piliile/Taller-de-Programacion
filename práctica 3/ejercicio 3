@@ -1,1 +1,199 @@
+{3. Implementar un programa que contenga:
+a. Un módulo que lea información de los finales rendidos por los alumnos de la Facultad de
+Informática y los almacene en una estructura de datos. La información que se lee es legajo,
+código de materia, fecha y nota. La lectura de los alumnos finaliza con legajo 0. La estructura
+generada debe ser eficiente para la búsqueda por número de legajo y para cada alumno deben
+guardarse los finales que rindió en una lista.
+b. Un módulo que reciba la estructura generada en a. y retorne la cantidad de alumnos con
+legajo impar.
+c. Un módulo que reciba la estructura generada en a. e informe, para cada alumno, su legajo y
+su cantidad de finales aprobados (nota mayor o igual a 4).
+d. Un módulo que reciba la estructura generada en a. y un valor real. Este módulo debe
+retornar los legajos y promedios de los alumnos cuyo promedio supera el valor ingresado.}
 
+program ejercicio3;
+const
+	corte = 0;
+
+type
+	final = record
+		codigomateria: integer;
+		fecha: string;
+		nota: real;
+	end;
+
+	lista = ^nodo;
+	nodo = record 
+		dato: final;
+		sig: lista;
+	end;
+
+	
+	alumno = record
+		legajo: integer;
+		finales: lista;
+	end;
+	
+	arbol = ^nodoarbol;
+	nodoarbol = record
+		dato: alumno;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	
+		
+		
+	procedure leerfinalylegajo(var f: final; var lega: integer);
+	begin 
+		writeln('Ingrese el número de legajo del alumno: ');
+		readln(lega);
+		if(lega <> corte) then begin
+			writeln('Ingrese el código de la materia: ');
+			readln(f.codigomateria);
+			writeln('Ingrese la fecha: ');
+			readln(f.fecha);
+			writeln('Ingrese la nota que obtuvo: ');
+			readln(f.nota);
+		end;
+	end;
+	
+	procedure agregarAdelante(var l: lista; f: final);
+	var
+		nue: lista;
+	begin
+		new(nue);
+		nue^.dato := f;
+		nue^.sig := l;
+		l := nue;
+	end;
+	
+	procedure agregar(var a: arbol; f: final; lega: integer);
+	begin 
+		if (a = nil) then begin
+			new(a);
+			a^.dato.legajo := lega;
+			a^.dato.finales := nil;
+			agregarAdelante(a^.dato.finales, f);
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin 
+			if(a^.dato.legajo = lega) then
+				agregarAdelante(a^.dato.finales, f)
+			else begin
+				if(a^.dato.legajo > lega) then 
+					agregar(a^.HI, f, lega)
+				else
+					agregar(a^.HD, f, lega);
+			end;
+		end;
+	end;
+	
+	procedure cargarArbol(var a: arbol);
+	var
+		lega: integer;
+		f: final;
+	begin
+		leerfinalylegajo(f, lega);
+		while(lega <> corte) do begin 
+			agregar(a, f, lega);
+			leerfinalylegajo(f, lega);
+		end;
+	end;
+	
+	function cantidadimpares(a: arbol): integer;
+		
+		procedure buscocantidadimpares(a: arbol; var cantimp: integer);
+		begin 
+			if (a <> nil) then begin
+				if ((a^.dato.legajo mod 2) = 1) then 
+					cantimp := cantimp + 1;
+				buscocantidadimpares(a^.HI, cantimp);
+				buscocantidadimpares(a^.HD, cantimp);
+			end;
+		end;
+
+	var
+		cantidad: integer;
+	begin 
+		cantidad := 0;
+		buscocantidadimpares(a, cantidad);
+		cantidadimpares := cantidad;
+	end;	
+
+	procedure imprimoLegConCantAprobados(a: arbol);
+		
+		function cantidadAprobados(l: lista): integer;
+		var
+			cantAp: integer;
+		begin 
+			cantAp := 0;
+			while (l <> nil) do begin 
+				if (l^.dato.nota >= 4) then 
+					cantAp := cantAp + 1;
+				l := l^.sig;
+			end;
+			cantidadAprobados := cantAp;
+		end;
+		
+	begin 
+		if (a <> nil) then begin 
+			imprimoLegConCantAprobados(a^.HI);
+			writeln('El número de legajo del alumno es: ', a^.dato.legajo);
+			writeln('Y la cantidad de finales aprobados es: ', cantidadAprobados(a^.dato.finales));
+			imprimoLegConCantAprobados(a^.HD);
+		end;
+	end;
+
+{d. Un módulo que reciba la estructura generada en a. y un valor real. Este módulo debe
+retornar los legajos y promedios de los alumnos cuyo promedio supera el valor ingresado.}
+
+	procedure imprimoAlumnosSuperanProm(a: arbol; valor: real);
+	
+		function promedioCalculado(l: lista): real;
+		var
+			contador: real;
+			cant: integer;
+		begin 
+			cant := 0;
+			contador := 0;
+			while (l <> nil) do begin 
+				contador := contador + l^.dato.nota;
+				cant := cant + 1;
+				l := l^.sig;
+			end;
+			promedioCalculado := contador/cant;
+		end;
+	var
+		prom: real;
+	begin
+		prom := 0;
+		if (a <> nil) then begin
+			prom := promedioCalculado(a^.dato.finales);
+			if (prom > valor) then 
+				writeln('El alumno con número de legajo: ', a^.dato.legajo, ' supera el valor, con un promedio de: ', prom:0:2);
+			imprimoAlumnosSuperanProm(a^.HI, valor);
+			imprimoAlumnosSuperanProm(a^.HD, valor);
+		end;
+	end;
+	
+// programa principal	
+var
+	a: arbol;
+	valor: real;
+begin
+
+	cargarArbol(a);
+		
+	cantidadimpares(a);
+	
+	imprimoLegConCantAprobados(a);
+	
+	writeln('La cantidad de legajos impares es: ', cantidadimpares(a));
+	
+	writeln('Ingrese un valor de promedio para comprobar si supera o no, el promedio de algun alumno: ');
+	readln(valor);
+	writeln('Los alumnos que superan el promedio de ', valor:0:2 , ' son: ');
+	imprimoAlumnosSuperanProm(a, valor);
+end.
