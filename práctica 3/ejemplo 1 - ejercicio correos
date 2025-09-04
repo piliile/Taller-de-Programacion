@@ -1,0 +1,8 @@
+{Un sistema de gestión de correos electrónicos desea manejar los correos recibidos por cada cliente. De cada cliente se conoce 
+su código (1..1000), la dirección de email y la cantidad de correos sin leer.
+Realizar un programa que invoque a módulos para: 
+1. Leer y almacenar los clientes en una estructura de datos eficiente para la búsqueda por código de cliente. La lectura finaliza al
+ingresar el cliente 1000.
+2. Leer un código de cliente e informar la cantidad de correos sin leer.
+3. Imprimir todos los códigos de cliente de mayor a menor.
+4. Leer una dirección de correo e informar si existe un cliente con esa dirección.}
