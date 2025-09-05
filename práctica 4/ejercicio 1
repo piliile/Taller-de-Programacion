@@ -1,14 +1,14 @@
 {a. Almacenar los productos vendidos en una estructura eficiente para la búsqueda por código de producto. De cada producto deben quedar almacenados su código, 
-la cantidad total de unidades vendidas y el monto total. De cada venta se cargan código de venta, código del producto vendido, cantidad de unidades vendidas y precio unitario. 
-El ingreso de las ventas finaliza cuando se lee el código de venta 0.
+la cantidad total de unidades vendidas y el monto total. De cada venta se cargan código de venta, 
+código del producto vendido, cantidad de unidades vendidas y precio unitario. El ingreso de las ventas finaliza cuando se lee el código de venta 0.
 b. Imprimir el contenido del árbol ordenado por código de producto.
 c. Retornar el menor código de producto.
 d. Retornar la cantidad de códigos que existen en el árbol que son menores que un valor que se recibe como parámetro.
-e. Retornar el monto total entre todos los códigos de productos comprendidos entre dos valores recibidos (sin incluir) como parámetros.
+e. Retornar el monto total entre todos los códigos de productos comprendidos entre dos valores recibidos (sin incluir) como parámetros.}
 
-}
+
 program ejercicio1;
-const
+const   
     corte = 0;
     
 type
@@ -19,10 +19,10 @@ type
     end;
     
     venta = record
-        codigoVenta: integer
+        codigoVenta: integer;
         codigoProducto: integer;
         cantidadUV: integer;
-        precioUnitario: integer;
+        precioUnitario: real;
     end;
     
     arbol = ^nodo;
@@ -46,66 +46,131 @@ type
         end;
     end;
     
-    procedure agregar(var a: arbol; p: producto; v:venta);
+    procedure asignar(var p: producto; v: venta);
+    begin
+        p.codigo := v.codigoProducto;
+        p.cantidadUV := v.cantidadUV;
+        p.montoTotal := v.precioUnitario * v.cantidadUV;
+    end;
+    
+    procedure agregar(var a: arbol; v: venta );
+    var 
+        p: producto;
     begin
         if (a = nil) then begin 
             new(a);
-            a^.dato := p; 
+            asignar(a^.dato, v);
             a^.HI := nil;
             a^.HD := nil;
         end
-        else    
-            if (a^.dato.codigo > p.codigo) then 
-                agregar(a^.HI, p)
-            else    
-                agregar(a^.HD, p);
-        
+        else begin
+            if (a^.dato.codigo = v.codigoProducto) then begin 
+                a^.dato.cantidadUV := a^.dato.cantidadUV + v.cantidadUV;
+                a^.dato.montoTotal := a^.dato.montoTotal + (v.cantidadUV * v.precioUnitario);
+            end
+            else begin
+                if (a^.dato.codigo > v.codigoProducto) then 
+                    agregar(a^.HI, p)
+                else    
+                    agregar(a^.HD, p);
+            end;
+        end;
     end;
     
     procedure cargarArbol(var a: arbol);
     var 
-        p: producto;
+        v: venta;
     begin
-        leerProducto(p);
-        while (p.codigo <> corte) do begin 
-            agregar(a, p);
-            leerProducto(p);
+        leerVenta(v);
+        while (v.codigoVenta <> corte) do begin 
+            agregar(a, v);
+            leerVenta(v);
         end;
     end;
+    
     
     procedure imprimoEnOrden(a: arbol);
     begin
         if (a <> nil) then begin 
             imprimoEnOrden(a^.HI);
-            writeln('El codigo de producto es: ', a^.)
-    
+            writeln('El codigo de producto es: ', a^.codigo, ', la cantidad de unidades vendidas es: ', a^.cantidadUV, ' y el monto total será: ', a^.dato.montoTotal);
+            imprimoEnOrden(a^.HD);
+        end;
     end;
 
+    function retornoMenorCodigoProducto(a: arbol): integer;
+    begin
+        if (a^.HI <> nil) then 
+            retornoMenorCodigoProducto := retornoMenorCodigoProducto(a^.HI)
+        else    
+            retornoMenorCodigoProducto := a^.dato.codigo;
+    end;
+
+   { function CantCodsMenores(a: arbol; valor: integer; cantidad:integer): integer;
+    begin 
+        if (a <> nil) then begin
+                if (a^.dato.codigo < v) then 
+                    CantCodsMenores := CantCodsMenores + 1 +CantCodsMenores(a^.HI, v, cantidad) + CantCodsMenores(a^.HD, v, cantidad);  
+    end;}
+    
+    function menores (a:arbol; valor:integer):integer;
+    begin
+	if (a=nil) then
+		menores:=0
+	else begin
+		if (a^.dato.codigo < valor) then
+	    	menores:= 1 + menores (a^.hi,valor) + menores (a^.hd,valor)
+		else // si es mayor el codigo, me fijo si el de mi izquierda (siempre menor al que estoy en el momento) es menor que el valor
+			menores:= menores (a^.hi,valor)
+	end;
+end;
 
 
-
+    function retornoMontoTotal(a: arbol; v1, v2: integer): integer;
+    begin 
+        if (a = nil) then 
+            retornoMontoTotal := 0;
+        else begin
+            if (a^.dato.codigo > v1) and (a^.dato.codigo < v2) then 
+                retornoMontoTotal := a^.dato.montoTotal + retornoMontoTotal(a^.HI, v1, v2) + retornoMontoTotal(a^.HD, v1, v2)
+            else    
+                if (a^.dato.codigo < v1) then 
+                    retornoMontoTotal := retornoMontoTotal(a^.HD, v1, v2)
+                else    
+                    retornoMontoTotal := retornoMontoTotal(a^.HI, v1, v2);
+        end;            
+    end;
+    
+    
+{e. Retornar el monto total entre todos los códigos de productos comprendidos entre dos valores recibidos (sin incluir) como parámetros.}
 var 
     a: arbol;
+    minimocodigo, valor, valor2: integer;
+    montoTotalEntreValores: real;
 begin
-    cargarArbol(a);
+    a := nil;
+    cargarArbol(a); // a
+    
+    imprimoEnOrden(a); // b
 
+    minimocodigo := retornoMenorCodigoProducto(a);
+    
+    
+    writeln('Ingrese un valor para buscarlo en el arbol: ');
+    readln(valor);
+    cant := menores(a, valor);
+    
+    
+    writeln('Ingrese un valor como limite inferior: ');
+    readln(valor);
+    writeln('Ingrese un valor como limite superior: ');
+    readln(valor2);
+    montoTotalEntreValores := retornoMontoTotal(a, valor, valor2);
+    
 end.
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
     
     
     
