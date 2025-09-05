@@ -102,7 +102,7 @@ type
 		end;
 	end;
 	
-	function cantidadimpares(a: arbol): integer; // me la complico un monton
+	{function cantidadimpares(a: arbol): integer; // me la complico un monton
 		
 		procedure buscocantidadimpares(a: arbol; var cantimp: integer);
 		begin 
@@ -120,7 +120,18 @@ type
 		cantidad := 0;
 		buscocantidadimpares(a, cantidad);
 		cantidadimpares := cantidad;
-	end;	
+	end;	}
+
+	function cantidadimpares(a: arbol): integer;
+	begin
+		if (a = nil) then  
+			cantidadimpares := 0
+		else
+			if (a^.dato.legajo mod 2 = 1) then 
+				cantidadimpares := 1 + cantidadimpares(a^.HI) + cantidadimpares(a^.HD)
+			else
+				cantidadimpares := cantidadimpares(a^.HI) + cantidadimpares(a^.HD);
+	end;
 
 	procedure imprimoLegConCantAprobados(a: arbol);
 		
@@ -163,7 +174,10 @@ retornar los legajos y promedios de los alumnos cuyo promedio supera el valor in
 				cant := cant + 1;
 				l := l^.sig;
 			end;
-			promedioCalculado := contador/cant;
+			if (cant > 0) then
+				promedioCalculado := contador/cant
+			else
+				promedioCalculado := 0;
 		end;
 	var
 		prom: real;
@@ -182,15 +196,15 @@ retornar los legajos y promedios de los alumnos cuyo promedio supera el valor in
 var
 	a: arbol;
 	valor: real;
+	cant: integer;
 begin
 	a := nil; 
 	cargarArbol(a);
 		
-	cantidadimpares(a);
+	cant := cantidadimpares(a);
+	writeln('La cantidad de legajos impares es: ', cant);
 	
 	imprimoLegConCantAprobados(a);
-	
-	writeln('La cantidad de legajos impares es: ', cantidadimpares(a));
 	
 	writeln('Ingrese un valor de promedio para comprobar si supera o no, el promedio de algun alumno: ');
 	readln(valor);
