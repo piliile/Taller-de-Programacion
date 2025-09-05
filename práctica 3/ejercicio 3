@@ -183,7 +183,7 @@ var
 	a: arbol;
 	valor: real;
 begin
-
+	a := nil; 
 	cargarArbol(a);
 		
 	cantidadimpares(a);
