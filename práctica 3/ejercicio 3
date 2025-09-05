@@ -102,7 +102,7 @@ type
 		end;
 	end;
 	
-	function cantidadimpares(a: arbol): integer;
+	function cantidadimpares(a: arbol): integer; // me la complico un monton
 		
 		procedure buscocantidadimpares(a: arbol; var cantimp: integer);
 		begin 
