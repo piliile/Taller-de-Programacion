@@ -1,5 +1,116 @@
-{a. Almacenar los productos vendidos en una estructura eficiente para la búsqueda por código de producto. De cada producto deben quedar almacenados su código, la cantidad total de unidades vendidas y el monto total. De cada venta se cargan código de venta, código del producto vendido, cantidad de unidades vendidas y precio unitario. El ingreso de las ventas finaliza cuando se lee el código de venta 0.
+{a. Almacenar los productos vendidos en una estructura eficiente para la búsqueda por código de producto. De cada producto deben quedar almacenados su código, 
+la cantidad total de unidades vendidas y el monto total. De cada venta se cargan código de venta, código del producto vendido, cantidad de unidades vendidas y precio unitario. 
+El ingreso de las ventas finaliza cuando se lee el código de venta 0.
 b. Imprimir el contenido del árbol ordenado por código de producto.
 c. Retornar el menor código de producto.
 d. Retornar la cantidad de códigos que existen en el árbol que son menores que un valor que se recibe como parámetro.
-e. Retornar el monto total entre todos los códigos de productos comprendidos entre dos valores recibidos (sin incluir) como parámetros.}
+e. Retornar el monto total entre todos los códigos de productos comprendidos entre dos valores recibidos (sin incluir) como parámetros.
+
+}
+program ejercicio1;
+const
+    corte = 0;
+    
+type
+    producto = record
+        codigo: integer;
+        cantidadUV: integer;
+        montoTotal: real;
+    end;
+    
+    venta = record
+        codigoVenta: integer
+        codigoProducto: integer;
+        cantidadUV: integer;
+        precioUnitario: integer;
+    end;
+    
+    arbol = ^nodo;
+    nodo = record
+        dato: producto;
+        HI: arbol;
+        HD: arbol;
+    end;
+    
+    procedure leerVenta(var v:venta);
+    beginproducto
+        writeln('Ingrese el código de venta: ');
+        readln(v.codigoVenta);
+        if (v.codigoVenta <> corte) then begin 
+            writeln ('ingrese codigo de producto: ');
+            readln (v.codigoProducto);
+            writeln('Ingrese la cantidad de unidades vendidas: ');
+            readln(v.cantidadUV);
+            writeln('Ingrese el precio unitario: ');
+            readln(v.precioUnitario);
+        end;
+    end;
+    
+    procedure agregar(var a: arbol; p: producto; v:venta);
+    begin
+        if (a = nil) then begin 
+            new(a);
+            a^.dato := p; 
+            a^.HI := nil;
+            a^.HD := nil;
+        end
+        else    
+            if (a^.dato.codigo > p.codigo) then 
+                agregar(a^.HI, p)
+            else    
+                agregar(a^.HD, p);
+        
+    end;
+    
+    procedure cargarArbol(var a: arbol);
+    var 
+        p: producto;
+    begin
+        leerProducto(p);
+        while (p.codigo <> corte) do begin 
+            agregar(a, p);
+            leerProducto(p);
+        end;
+    end;
+    
+    procedure imprimoEnOrden(a: arbol);
+    begin
+        if (a <> nil) then begin 
+            imprimoEnOrden(a^.HI);
+            writeln('El codigo de producto es: ', a^.)
+    
+    end;
+
+
+
+
+var 
+    a: arbol;
+begin
+    cargarArbol(a);
+
+end.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
