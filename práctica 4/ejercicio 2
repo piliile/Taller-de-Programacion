@@ -1,0 +1,285 @@
+{2. Descargar el programa ImperativoEjercicioClase3.pas de la clase anterior e incorporar lo
+necesario para:
+i. Informar el número de socio más grande. Debe invocar a un módulo recursivo que
+retorne dicho valor.
+ii. Informar los datos del socio con el número de socio más chico. Debe invocar a un
+módulo recursivo que retorne dicho socio.
+iii. Leer un valor entero e informar si existe o no existe un socio con ese valor. Debe
+invocar a un módulo recursivo que reciba el valor leído y retornar verdadero o falso.
+iv. Leer dos valores e informar la cantidad de socios cuyos códigos se encuentran
+comprendidos entre los valores leídos. Debe invocar a un módulo recursivo que reciba
+los valores leídos y retorne la cantidad solicitada.}
+
+program ejercicio1;
+const
+	corte = 0;
+
+type
+	socio = record 
+		numero: integer;
+		nombre: string;
+		edad: integer;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: socio;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	
+procedure cargarsocio(var s: socio);
+var
+	vNombres: array [0..9] of string = ('Pilar', 'Alejandra', 'Maria', 'Martin', 'Tomas', 'Lucia', 'Candela', 'Ines', 'Jazmin', 'Pedro'); 
+begin 
+	s.numero := random(100);
+	writeln('El numero aleatorio es: ', s.numero);
+	
+	if (s.numero <> corte) then begin 
+		s.nombre := vNombres[random(10)];
+		writeln('El nombre del socio es: ', s.nombre);
+		s.edad := random(100);
+		writeln('La edad del socio es: ', s.edad);
+	end;
+end;
+
+procedure agregar(var a: arbol; s: socio);
+begin	
+	if (a = nil) then begin 
+		new(a);
+		a^.dato := s;
+		a^.HI := nil;
+		a^.HD := nil;
+	end
+	else
+		if (s.numero <= a^.dato.numero)	then 
+			agregar(a^.HI, s)
+		else
+			agregar(a^.HD, s);
+end;
+
+procedure cargarArbol(var a: arbol);
+var
+	s: socio;
+begin
+	cargarsocio(s);
+	while (s.numero <> corte) do begin 
+		agregar(a, s);
+		cargarsocio(s);
+	end;
+end;
+
+procedure imprimoEnOrden(a: arbol);
+begin
+	if (a <> nil) then begin
+		imprimoEnOrden(a^.HI);
+		writeln('El numero de socio es: ', a^.dato.numero, ', el nombre: ', a^.dato.nombre, '. Y la edad es: ', a^.dato.edad);
+		imprimoEnOrden(a^.HD);
+	end;
+end;
+
+procedure imprimoEnOrden2(a: arbol);
+begin
+	if (a <> nil) then begin
+		imprimoEnOrden2(a^.HD);
+		writeln('El numero de socio es: ', a^.dato.numero, ', el nombre: ', a^.dato.nombre, '. Y la edad es: ', a^.dato.edad);
+		imprimoEnOrden2(a^.HI);
+	end;
+end;
+
+
+procedure buscarEdadMaxima(a: arbol; var edadmax: integer; var numeromax:integer); 
+begin 
+	if (a <> nil) then begin
+		if (a^.dato.edad > edadmax) then  begin	
+			edadmax := a^.dato.edad;
+			numeromax := a^.dato.numero;
+		end; 
+		buscarEdadMaxima(a^.HI, edadmax, numeromax); 
+		buscarEdadMaxima(a^.HD, edadmax, numeromax); 
+	end;
+end; 
+
+procedure aumentoEn1Impares(a: arbol; var cantidadqueaumente: integer);
+begin
+	if (a <> nil) then begin 
+		if (a^.dato.edad mod 2 = 1) then begin 
+			a^.dato.edad := a^.dato.edad + 1;
+			cantidadqueaumente := cantidadqueaumente + 1;
+		end;
+		aumentoEn1Impares(a^.HI, cantidadqueaumente);
+		aumentoEn1Impares(a^.HD, cantidadqueaumente);
+	end;
+end;	
+			
+{function buscoNombre(a: arbol; name: string): boolean;     MEJOR QUE PROCEDURE buscoNombre (yo hacia bN:= con HI y despues bN := con HD, eso no se puede)
+begin
+	if (a <> nil) then begin 
+		if (a^.dato.nombre = name) then 
+			buscoNombre := true
+		else 
+			buscoNombre := buscoNombre(a^.HI, name) OR buscoNombre(a^.HD, name); 
+	end
+	else
+		buscoNombre := false;
+end;	}
+				
+procedure buscoNombre(a: arbol; name: string; var ok: boolean);
+begin
+	if (a = nil) then 
+		ok := false
+	else
+		if (a^.dato.nombre = name) then 
+			ok := true
+		else begin
+			buscoNombre(a^.HI, name, ok);
+			if (not ok) then 	
+				buscoNombre(a^.HD, name, ok);
+		end;
+end;
+
+function cantidadtotalsocios(a: arbol): integer;
+begin 
+	if (a = nil) then
+		cantidadtotalsocios := 0
+	else 
+		cantidadtotalsocios := 1 + cantidadtotalsocios(a^.HI) + cantidadtotalsocios(a^.HD);
+end;	
+
+function sumaEdadesSocios(a: arbol): integer;
+begin 
+	if (a = nil) then
+		sumaEdadesSocios := 0
+	else 
+		sumaEdadesSocios := a^.dato.edad + sumaEdadesSocios(a^.HI) + sumaEdadesSocios(a^.HD);
+end;	
+
+function promedio(a: arbol): real;
+begin 
+	if (a = nil) then 
+		promedio := 0
+	else
+		promedio := sumaEdadesSocios(a)/cantidadtotalsocios(a);
+end;
+
+// fin módulos del ejercicio 1 clase 3.
+
+// inicio módulos del ejercicio 2 clase 4.
+
+function busconumsociomaximo(a: arbol): integer;
+begin 
+	if (a^.HD <> nil) then 
+		busconumsociomaximo := busconumsociomaximo(a^.HD)
+	else
+		busconumsociomaximo := a^.dato.numero;
+end;
+
+	
+
+procedure imprimoDatosNumSocioMasChico(a: arbol);
+	function buscoNumSocioMasChico(a: arbol): socio;
+	begin 
+		if (a^.HI <> nil) then 
+		buscoNumSocioMasChico := buscoNumSocioMasChico(a^.HI)
+		else	
+			buscoNumSocioMasChico := a^.dato;
+
+	end;
+var
+	s: socio;
+begin
+	s := buscoNumSocioMasChico(a);
+	writeln('El número es: ', s.numero, '.');
+	writeln('Su nombre es: ', s.nombre, '.');
+	writeln('Y la edad es: ', s.edad, '.');
+end;
+
+function buscoSocioConValor(a: arbol; v: integer): boolean;
+begin 
+	if (a = nil) then 
+		buscoSocioConValor := false
+	else begin
+		if (a^.dato.numero = v) then 
+			buscoSocioConValor := true
+		else begin
+			if (a^.dato.numero > v) then 
+				buscoSocioConValor := buscoSocioConValor(a^.HI, v)
+			else
+				buscoSocioConValor := buscoSocioConValor(a^.HD, v);
+		end;
+	end;
+end;
+
+function retornoCantidadQueCumplen(a: arbol; v, v2: integer): integer;
+begin
+	if (a = nil) then 
+		retornoCantidadQueCumplen := 0
+	else begin
+		if (a^.dato.numero >= v) and (a^.dato.numero <= v2) then 
+			retornoCantidadQueCumplen := 1 + retornoCantidadQueCumplen(a^.HI, v, v2) + retornoCantidadQueCumplen(a^.HD, v, v2)
+		else begin
+			if (a^.dato.numero < v) then 
+				retornoCantidadQueCumplen := retornoCantidadQueCumplen(a^.HD, v, v2)
+			else
+				retornoCantidadQueCumplen := retornoCantidadQueCumplen(a^.HI, v, v2)
+		end;
+	end;
+end;	
+
+// programa principal
+
+var
+	a: arbol;
+	numeromaximo, edadmaxima, cantidadaumente, numerosociomasgrande, valor, valor2, cantidadSociosEntreValores: integer;
+	nombre: string;
+	ok: boolean;
+begin 
+	Randomize;
+	a := nil;
+	cargarArbol(a); // A
+	writeln('El arbol impreso en orden creciente quedaría de la siguiente manera: ');
+	imprimoEnOrden(a);
+	writeln('El arbol impreso en orden decreciente quedaría de la siguiente manera: ');
+	imprimoEnOrden2(a);
+	
+	numeromaximo := -1;
+	writeln('El número de socio más grande es: ');
+	buscarEdadMaxima(a, edadmaxima, numeromaximo);
+	writeln('El socio más grande tiene: ', edadmaxima, ' años, y su numero es: ', numeromaximo);
+	
+	cantidadaumente := 0;
+	aumentoEn1Impares(a, cantidadaumente);
+	writeln('La cantidad de socios a los que se les tuvo que incrementar 1, son: ', cantidadaumente);
+	
+	writeln('Ingrese el nombre que se quiere buscar :');
+	readln(nombre);
+	ok := false;
+	buscoNombre(a, nombre, ok);
+	writeln('El resultado de la busqueda es: ', ok);
+	
+	writeln('La cantidad de socios es: ', cantidadtotalsocios(a));
+	
+	writeln('El promedio de edad de los socios es: ', promedio(a):0:2);
+	// fin incisos del ejercicio 1 clase 3.
+	
+	
+	// inicio incisos del ejercicio 2 clase 4.
+	
+	numerosociomasgrande := busconumsociomaximo(a);
+	writeln('El número de socio más grande es: ', numerosociomasgrande);
+	
+	writeln('Los datos del número de socio más chico, son: ');
+	imprimoDatosNumSocioMasChico(a);
+	
+	writeln('Ingrese un valor entero para buscar un socio con ese número: ');
+	readln(valor);
+	writeln('El resultado de si se encontró o no ese socio con ese valor es: ', buscoSocioConValor(a, valor));
+	
+	writeln('Ingrese el límite inferior para buscar socios entre un rango: ');
+	readln(valor);
+	writeln('Ingrese el límite superior para buscar socios entre un rango: ');
+	readln(valor2);
+	cantidadSociosEntreValores := retornoCantidadQueCumplen(a, valor, valor2);
+	writeln('La cantidad de socios que hay entre el rango es: ', cantidadSociosEntreValores);
+end.
