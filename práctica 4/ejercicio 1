@@ -33,7 +33,7 @@ type
     end;
     
     procedure leerVenta(var v:venta);
-    beginproducto
+    begin
         writeln('Ingrese el código de venta: ');
         readln(v.codigoVenta);
         if (v.codigoVenta <> corte) then begin 
@@ -54,8 +54,6 @@ type
     end;
     
     procedure agregar(var a: arbol; v: venta );
-    var 
-        p: producto;
     begin
         if (a = nil) then begin 
             new(a);
@@ -70,9 +68,9 @@ type
             end
             else begin
                 if (a^.dato.codigo > v.codigoProducto) then 
-                    agregar(a^.HI, p)
+                    agregar(a^.HI, v)
                 else    
-                    agregar(a^.HD, p);
+                    agregar(a^.HD, v);
             end;
         end;
     end;
@@ -93,7 +91,7 @@ type
     begin
         if (a <> nil) then begin 
             imprimoEnOrden(a^.HI);
-            writeln('El codigo de producto es: ', a^.codigo, ', la cantidad de unidades vendidas es: ', a^.cantidadUV, ' y el monto total será: ', a^.dato.montoTotal);
+            writeln('El codigo de producto es: ', a^.dato.codigo, ', la cantidad de unidades vendidas es: ', a^.dato.cantidadUV, ' y el monto total será: ', a^.dato.montoTotal:0:2);
             imprimoEnOrden(a^.HD);
         end;
     end;
@@ -126,10 +124,9 @@ type
 end;
 
 
-    function retornoMontoTotal(a: arbol; v1, v2: integer): integer;
+    function retornoMontoTotal(a: arbol; v1, v2: integer): real;
     begin 
-        if (a = nil) then 
-            retornoMontoTotal := 0;
+        if (a = nil) then
         else begin
             if (a^.dato.codigo > v1) and (a^.dato.codigo < v2) then 
                 retornoMontoTotal := a^.dato.montoTotal + retornoMontoTotal(a^.HI, v1, v2) + retornoMontoTotal(a^.HD, v1, v2)
@@ -142,10 +139,9 @@ end;
     end;
     
     
-{e. Retornar el monto total entre todos los códigos de productos comprendidos entre dos valores recibidos (sin incluir) como parámetros.}
 var 
     a: arbol;
-    minimocodigo, valor, valor2: integer;
+    minimocodigo, valor, valor2, cantMenores: integer;
     montoTotalEntreValores: real;
 begin
     a := nil;
@@ -154,24 +150,20 @@ begin
     imprimoEnOrden(a); // b
 
     minimocodigo := retornoMenorCodigoProducto(a);
-    
+    writeln('El minimo codigo es: ', minimocodigo);
     
     writeln('Ingrese un valor para buscarlo en el arbol: ');
     readln(valor);
-    cant := menores(a, valor);
-    
+    cantMenores := menores(a, valor);
+    writeln('La cantidad de valores menores a: ', valor, ', es de: ', cantMenores);
     
     writeln('Ingrese un valor como limite inferior: ');
     readln(valor);
     writeln('Ingrese un valor como limite superior: ');
     readln(valor2);
     montoTotalEntreValores := retornoMontoTotal(a, valor, valor2);
-    
+    writeln('El monto total que hay entre ', valor, ' y ', valor2, ' es de: ', montoTotalEntreValores:0:2); // ¿Nan?
 end.
-
-
-
-    
     
     
     
