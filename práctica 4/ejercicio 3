@@ -1,4 +1,4 @@
-3. Implementar un programa modularizado para una librería. Implementar módulos para:
+{3. Implementar un programa modularizado para una librería. Implementar módulos para:
 a. Almacenar los productos vendidos en una estructura eficiente para la búsqueda por
 código de producto. De cada producto deben quedar almacenados su código, la
 cantidad total de unidades vendidas y el monto total. De cada venta se lee código de
@@ -9,4 +9,175 @@ c. Retornar el código de producto con mayor cantidad de unidades vendidas.
 d. Retornar la cantidad de códigos que existen en el árbol que son menores que un valor
 que se recibe como parámetro.
 e. Retornar el monto total entre todos los códigos de productos comprendidos entre dos
-valores recibidos (sin incluir) como parámetros
+valores recibidos (sin incluir) como parámetros}
+
+program ejercicio3;
+const
+	corte = -1;
+
+type
+	producto = record
+		codigo: integer;
+		cantidadUnidadesVendidas: integer;
+		montoTotal: real;
+	end;
+	
+	venta = record
+		codigoVenta: integer;
+		codigoProducto: integer;
+		cantidadUnidadesVendidas: integer;
+		precioUnitario: real;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: producto;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	// módulos
+
+	procedure informacionVenta(var v: venta);
+	begin 
+		writeln('Ingrese el codigo de venta: ');
+		readln(v.codigoVenta);
+		if (v.codigoVenta <> corte) then begin	
+			v.codigoProducto := random(200);
+			writeln('El codigo de producto es: ', v.codigoProducto);
+			v.cantidadUnidadesVendidas := random(200);
+			writeln('La cantidad de unidades vendidas es: ', v.cantidadUnidadesVendidas); 
+			v.precioUnitario := random(500) + 1000;
+			writeln('El precio unitario es: ', v.precioUnitario:0:2);
+		end;
+	end;
+
+	procedure asignarContenidoDeVentaAProducto(var p: producto; v: venta);
+	begin
+		p.codigo := v.codigoProducto;
+		p.cantidadUnidadesVendidas := v.cantidadUnidadesVendidas;
+		p.montoTotal := v.cantidadUnidadesVendidas * v.precioUnitario;
+	end;
+	
+	procedure agregar(var a: arbol; v: venta);
+	begin 
+		if (a = nil) then begin 
+			new(a);
+			asignarContenidoDeVentaAProducto(a^.dato, v);
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.codigo = v.codigoProducto) then begin
+				a^.dato.cantidadUnidadesVendidas := a^.dato.cantidadUnidadesVendidas + v.cantidadUnidadesVendidas;
+				a^.dato.montoTotal := a^.dato.montoTotal + (v.cantidadUnidadesVendidas * v.precioUnitario);
+			end	
+			else begin
+				if (a^.dato.codigo > v.codigoProducto) then 
+					agregar(a^.HI, v)
+				else
+					agregar(a^.HD, v);
+			end;
+		end;
+	end;
+
+	procedure cargarArbol(var a: arbol);
+	var
+		v: venta;
+	begin 
+		informacionVenta(v);
+		while(v.codigoVenta <> corte) do begin 
+			agregar(a, v);
+			informacionVenta(v);
+		end;
+	end;
+
+	procedure imprimirArbol(a: arbol);
+	begin
+		if (a <> nil) then begin 
+			imprimirArbol(a^.HI);
+			writeln('El codigo de producto es: ', a^.dato.codigo, '. La cantidad total de unidades vendidas es: ', a^.dato.cantidadUnidadesVendidas,
+			'. Y el monto total es: ', a^.dato.montoTotal:0:2);
+			imprimirArbol(a^.HD);
+		end;
+	end;
+	
+	
+	function codigoProductoConMasCantUV(a: arbol): integer;
+	
+		procedure buscoMaximo(a: arbol; var codigomax, cantidadmax: integer);
+		begin
+			if (a <> nil) then begin
+				if (a^.dato.cantidadUnidadesVendidas > cantidadmax) then begin
+					cantidadmax := a^.dato.cantidadUnidadesVendidas;
+					codigomax := a^.dato.codigo;
+				buscoMaximo(a^.HI, codigomax, cantidadmax);
+				buscoMaximo(a^.HD, codigomax, cantidadmax);
+			end;	
+		end;
+		
+	var
+		codmax, cantmax: integer;
+	begin
+		codmax := -1;
+		cantmax := -1;
+		buscoMaximo(a, codmax, cantmax);
+		codigoProductoConMasCantUV := codmax;
+	end;
+	
+	retornoCantMenoresAValor(a: arbol; v: integer): integer;
+	begin 
+		if (a = nil) then 
+			retornoCantMenoresAValor := 0
+		else begin 
+			if (a^.dato.codigo < v) then 
+				retornoCantMenoresAValor := 1 + retornoCantMenoresAValor(a^.HI, v) + retornoCantMenoresAValor(a^.HD, v)
+			else
+				retornoCantMenoresAValor := retornoCantMenoresAValor(a^.HI, v);
+		end;
+	end;
+	
+	
+{e. Retornar el monto total entre todos los códigos de productos comprendidos entre dos
+valores recibidos (sin incluir) como parámetros}
+	function retornoMontoTotalEnRango(a: arbol; v1, v2: integer): real;
+	begin
+		if (a = nil) then 
+			retornoMontoTotalEnRango := 0
+		else begin 
+			if (a^.dato.codigo > v1) and (a^.dato.codigo < v2) then 
+				retornoMontoTotalEnRango := a^.dato.montoTotal + retornoMontoTotalEnRango(a^.HI, v1, v2) + retornoMontoTotalEnRango(a^.HD, v1, v2)
+			else begin
+				if (a^.dato.codigo > v1) then 
+					retornoMontoTotalEnRango := retornoMontoTotalEnRango(a^.HD, v1, v2)
+				else
+					retornoMontoTotalEnRango := retornoMontoTotalEnRango(a^.HI, v1, v2);
+			end;
+		end;
+	end;
+
+// programa principal
+var
+	a: arbol;
+	valor, valor2: integer;
+	
+begin 
+	Randomize;
+	a := nil;
+	cargarArbol(a);
+	
+	imprimirArbol(a);
+	
+	writeln('El codigo de producto con mas cantidad de unidades vendidas es: ', codigoProductoConMasCantUV(a));
+	
+	writeln('Ingrese un valor para determinar la cantidad de codigos menores a ese valor: ')
+	readln(valor);
+	writeln('La cantidad de codigos menores a: ', valor, ', son: ', retornoCantMenoresAValor(a, valor));
+	
+	writeln('Ingrese el límite inferior del rango: ');
+	readln(valor);
+	writeln('Ingrese el límite superior del rango: ');
+	readln(valor2);
+	
+	writeln('El monto total de los productos comprendidos en ese rango es de: ', retornoMontoTotalEnRango(a, valor, valor2):0:2); //chequear la funcion
+end.
