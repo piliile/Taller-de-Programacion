@@ -1,0 +1,193 @@
+{El sistema de gestión de correos electrónicos desea manejar los correos recibidos por cada cliente. De cada cliente se conoce el código
+(1..1000), la dirección de email y todos los mensaes que ha recibido. De cada mensaje se conoce la dirección del emisor, la fecha de 
+envío, asunto, texto y si el mensaje fue leído o no.
+Realizar un programa que invoque a módulos para:
+i. leer y almacenar los correos electrónicos en una estructura de datos eficiente para la búsqueda por código de cliente. De 
+cada correo se lee el id del cliente, la dirección de correo y toda la información del mensaje.
+ii. leer un código de cliente e informar la cantidad de correos sin leer. 
+iii. leer una dirección de correo e informar la cantidad de correos envíados desde dicha dirección. }
+
+program ejemplo2;
+const
+	dfcode = 1000;
+	corte = 0;
+
+type
+	rangocode = 0..dfcode;
+	
+	mensaje = record 
+		emailemisor: string;
+		fechaenvio: string;
+		asunto: string;
+		texto: string;
+		leido: boolean;
+	end;
+	
+	listamensajes = ^nodo;
+	nodo = record
+		dato: mensaje;
+		sig: listamensajes;
+	end;
+	
+	cliente = record
+		codigo: rangocode;
+		email: string;
+	end;
+	
+	mensajecliente = record
+		m: mensaje;
+		c: cliente
+	end;
+		
+	datoscliente = record
+		c: cliente;
+		mensajes: listamensajes;
+	end;
+	
+	arbol = ^nodo2;
+	nodo2 = record
+		dato: datoscliente;
+		HI: arbol;
+		HD: arbol;
+	end;
+
+
+	
+	procedure leerinformacion(var mc: mensajecliente);
+	var
+		i: integer;
+	begin
+		writeln('Ingrese el codigo de cliente, entre 0 y 1000: ');
+		readln(mc.c.codigo);
+		if (mc.c.codigo <> corte) then begin 	
+			writeln('Ingrese la direccion de email : ');
+			readln(mc.c.email);
+			writeln('Ingrese la direccion de email del emisor: ');
+			readln(mc.m.emailemisor);
+			writeln('Ingrese la fecha de envio: ');
+			readln(mc.m.fechaenvio);
+			writeln('Ingrese el asunto: ');
+			readln(mc.m.asunto);
+			writeln('Ingrese el texto: ');
+			readln(mc.m.texto);
+			writeln('Ingrese 1 si el mensaje fue leido, si no fue leido ingrese otro numero: ');
+			readln(i);
+			mc.m.leido := (i = 1);
+		end;
+	end;
+
+	procedure agregarAdelante(var l: listamensajes; m: mensaje);
+	var
+		nue: listamensajes;
+	begin
+		new(nue);
+		nue^.dato := m;
+		nue^.sig := l;
+		l := nue;
+	end;
+
+
+	procedure agregar(var a: arbol; mc: mensajecliente);
+	begin 
+		if (a= nil) then begin 
+			new(a);
+			a^.dato.c := mc.c;
+			a^.dato.mensajes := nil;
+			agregarAdelante(a^.dato.mensajes, mc.m);
+			a^.HI := nil; 
+			a^.HD := nil;	
+		end
+		else begin
+			if (a^.dato.c.codigo = mc.c.codigo) then 
+				agregarAdelante(a^.dato.mensajes, mc.m)
+			else begin 
+				if (a^.dato.c.codigo > mc.c.codigo) then 
+					agregar(a^.HI, mc)
+				else
+					agregar(a^.HD, mc);
+			end;
+		end;
+	end;
+
+
+	procedure cargarArbol(var a: arbol);
+	var
+		mc: mensajecliente;
+	begin 
+		leerinformacion(mc);
+		while(mc.c.codigo <> corte) do begin 
+			agregar(a, mc);
+			leerinformacion(mc);
+		end;
+	end;
+	
+	function acumuloEnLista(l: listamensajes; cant: integer): integer;
+	begin 			
+		while (l <> nil) do begin 
+			if (l^.dato.leido =  false) then 
+				cant := cant + 1;
+			l := l^.sig;
+		end;
+		acumuloEnLista := cant;
+	end;
+	
+	function retornoCantSinLeer(a: arbol; c: integer): integer;
+	var
+		cant: integer;
+	begin
+		
+		if (a = nil) then 
+			retornoCantSinLeer := 0
+		else begin
+			if (a^.dato.c.codigo = c) then begin 
+				cant := 0;
+				retornoCantSinLeer := acumuloEnLista(a^.dato.mensajes, cant);
+			end
+			else begin
+				if (a^.dato.c.codigo > c) then 
+					retornoCantSinLeer := retornoCantSinLeer(a^.HI, c)
+				else
+					retornoCantSinLeer := retornoCantSinLeer(a^.HD, c);
+			end;
+		end;
+	end;
+	
+	
+	
+	function retornoCantDir(a: arbol; dir: string): integer; 
+		function retornoDir(l: listamensajes; dir: string): integer;
+		var 
+			cant: integer;
+		begin
+			cant := 0;
+			while (l <> nil) do begin 
+				if (l^.dato.emailemisor = dir) then 
+					cant  := cant +1;
+				l := l^.sig;
+			end;
+			retornoDir := cant;
+		end;
+	
+	begin
+		if (a = nil) then 
+			retornoCantDir := 0
+		else 
+			retornoCantDir := retornoDir(a^.dato.mensajes, dir) + retornoCantDir(a^.HI, dir) + retornoCantDir(a^.HD, dir);
+	end;
+		
+var
+	a: arbol;
+	codigocliente: integer;
+	direccion: string;
+begin
+	a := nil;
+	cargarArbol(a);
+	
+	writeln('Ingrese un código de cliente para buscar la cantidad de correos sin leer del mismo: ');
+	readln(codigocliente);
+	writeln('La cantidad de correos sin leer del cliente con código ', codigocliente, ' es: ', retornoCantSinLeer(a, codigocliente));
+	
+	writeln('Ingrese una dirección de correo para determinar la cantidad de correos enviados del mismo: ');
+	readln(direccion);
+	writeln('La cantidad de correos enviandos por el emisor con dirección ', direccion, ' es de: ', retornoCantDir(a, direccion));
+end.
