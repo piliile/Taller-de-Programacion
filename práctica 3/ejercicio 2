@@ -238,6 +238,7 @@ var
 	date: integer;
 begin
 	Randomize;
+	a := nil; a2 := nil; a3 := nil;
 	cargarArboles(a, a2, a3);
 	
 	writeln('Ingrese el numero de la fecha para saber la cantidad total de productos vendidos: ');
