@@ -212,7 +212,7 @@ retornar los legajos y promedios de los alumnos cuyo promedio supera el valor in
 		lis := nue;
 	end;
 
-	procedure retornoD(a: arbol; var lis: listaAlumnos; v: valor);
+	procedure retornoD(a: arbol; var lis: listaAlumnos; v: real);
 		
 		function promedioCalculado(l: lista): real;
 		var
