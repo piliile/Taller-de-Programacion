@@ -98,10 +98,14 @@ type
 
     function retornoMenorCodigoProducto(a: arbol): integer;
     begin
-        if (a^.HI <> nil) then 
-            retornoMenorCodigoProducto := retornoMenorCodigoProducto(a^.HI)
-        else    
-            retornoMenorCodigoProducto := a^.dato.codigo;
+		if (a = nil) then 
+			retornoMenorCodigoProducto := -1
+		else begin
+			if (a^.HI <> nil) then 
+				retornoMenorCodigoProducto := retornoMenorCodigoProducto(a^.HI)
+			else    
+				retornoMenorCodigoProducto := a^.dato.codigo;
+		end;
     end;
 
    { function CantCodsMenores(a: arbol; valor: integer; cantidad:integer): integer;
@@ -127,7 +131,6 @@ end;
     function retornoMontoTotal(a: arbol; v1, v2: integer): real;
     begin 
         if (a = nil) then
-			retornoMontoTotal := 0
         else begin
             if (a^.dato.codigo > v1) and (a^.dato.codigo < v2) then 
                 retornoMontoTotal := a^.dato.montoTotal + retornoMontoTotal(a^.HI, v1, v2) + retornoMontoTotal(a^.HD, v1, v2)
@@ -165,8 +168,7 @@ begin
     montoTotalEntreValores := retornoMontoTotal(a, valor, valor2);
     writeln('El monto total que hay entre ', valor, ' y ', valor2, ' es de: ', montoTotalEntreValores:0:2); // ¿Nan?
 end.
-    
-    
+
     
     
     
