@@ -111,6 +111,7 @@ type
 				if (a^.dato.cantidadUnidadesVendidas > cantidadmax) then begin
 					cantidadmax := a^.dato.cantidadUnidadesVendidas;
 					codigomax := a^.dato.codigo;
+				end;
 				buscoMaximo(a^.HI, codigomax, cantidadmax);
 				buscoMaximo(a^.HD, codigomax, cantidadmax);
 			end;	
@@ -125,7 +126,7 @@ type
 		codigoProductoConMasCantUV := codmax;
 	end;
 	
-	retornoCantMenoresAValor(a: arbol; v: integer): integer;
+	function retornoCantMenoresAValor(a: arbol; v: integer): integer;
 	begin 
 		if (a = nil) then 
 			retornoCantMenoresAValor := 0
@@ -170,7 +171,7 @@ begin
 	
 	writeln('El codigo de producto con mas cantidad de unidades vendidas es: ', codigoProductoConMasCantUV(a));
 	
-	writeln('Ingrese un valor para determinar la cantidad de codigos menores a ese valor: ')
+	writeln('Ingrese un valor para determinar la cantidad de codigos menores a ese valor: ');
 	readln(valor);
 	writeln('La cantidad de codigos menores a: ', valor, ', son: ', retornoCantMenoresAValor(a, valor));
 	
