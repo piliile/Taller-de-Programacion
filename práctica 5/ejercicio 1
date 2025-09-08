@@ -1,0 +1,142 @@
+{1. El administrador de un edificio de oficinas tiene la información del pago de las expensas
+de dichas oficinas. Implementar un programa con:
+a) Un módulo que retorne un vector, sin orden, con a lo sumo las 300 oficinas que
+administra. Se deben cargar, para cada oficina, el código de identificación, DNI del
+propietario y valor de la expensa. La lectura finaliza cuando llega el código de
+identificación 0.
+b) Un módulo que reciba el vector retornado en a) y retorne dicho vector ordenado por
+código de identificación de la oficina. Ordenar el vector aplicando uno de los métodos
+vistos en la cursada.
+c) Un módulo que realice una búsqueda dicotómica. Este módulo debe recibir el vector
+generado en b) y un código de identificación de oficina. En el caso de encontrarlo, debe
+retornar la posición del vector donde se encuentra y en caso contrario debe retornar 0.
+Luego el programa debe informar el DNI del propietario o un cartel indicando que no
+se encontró la oficina.
+d) Un módulo recursivo que retorne el monto total de las expensas}
+
+
+
+program ejercicio1;
+const
+	corte = 0;
+	dfoficina = 300;
+type
+	rangooficinas = 1..dfoficina;
+
+	oficina = record
+		codigoid: integer;
+		dnipropietario: integer;
+		valorexpensa: real;
+	end;
+	
+	vector = array [rangooficinas] of oficina;
+
+
+
+// módulos
+	procedure leerOficina(var o: oficina);
+	begin
+		writeln('Ingrese el código de identificación: ');
+		readln(o.codigoid);
+		if (o.codigoid <> corte) then begin 
+			writeln('Ingrese el dni del propietario: ');
+			readln(o.dnipropietario);
+		
+			writeln('Ingrese el valor de la expensa: ');
+			readln(o.valorexpensa);
+		end;
+	end;
+	
+	procedure cargarVector(var v: vector; var diml: integer);
+	var
+		o: oficina;
+	begin 
+		leerOficina(o);
+		while (diml < dfoficina) and (o.codigoid <> corte) do begin
+			diml := diml + 1;
+			v[diml] := o;
+			leerOficina(o);
+		end;
+	end;
+
+	procedure ordenarporseleccion(var v: vector; diml: integer);
+	var
+		i, j, pos: integer;
+		item: oficina;
+	begin
+		for i := 1 to (diml - 1) do begin 
+			pos := i;
+			for j := (i + 1) to diml do 
+				if(v[j].codigoid < v[pos].codigoid) then 
+					pos := j;
+			item := v[pos];
+			v[pos] := v[i];
+			v[i] := item;
+		end;
+	end;
+					
+	end;
+	{procedure ordenarporinsercion(var v: vector; diml: integer);
+	var
+		i, j: integer;
+		act: oficina;
+	begin 
+		for i := 2 to diml do begin 
+			act := v[i];
+			j := i - 1;
+			while (j > 0) and (v[j].codigoid > act.codigoid) do begin 
+				v[j + 1] := v[j];
+				j := j - 1;
+			end;
+			v[j + 1] := act;
+		end;
+	end;}
+		
+	procedure busquedadicotomica(v: vector; inicio, fin: integer; var pos: integer; codId: integer);
+	var
+		medio: integer;
+	begin
+		medio := (inicio + fin) div 2;
+		while (inicio <= fin) and (v[medio] <> codId) do begin 
+			if (v[medio] < codId) then 
+				inicio := medio + 1
+			else
+				fin := medio - 1;
+			medio := (inicio + fin) div 2;
+		end;
+		if (inicio <= fin) and (v[medio] = codId) then 
+			pos := medio;
+		else
+			pos := 0;
+	end;
+	
+	function retornovalortotalexp(v: vector; diml: integer): real;
+	begin 
+		if (diml = 0) then 
+			retornovalortotalexp := 0
+		else
+			retornovalortotalexp := v[diml].valorexpensa + retornovalortotalexp(v, diml -1 );
+	end;
+// programa principal
+
+var
+	v: vector;
+	diml, codId, inicio: integer;
+	
+begin	
+	diml := 0;
+	cargarVector(v, diml);
+
+	ordenarporseleccion(v, diml);
+	
+	writeln('Ingrese un codigo de identificacion para buscar la oficina con dicho codigo: ');
+	readln(codId);
+	inicio := 1;
+	busquedadicotomica(v, inicio, diml, posicion, codId);
+	if (posicion <> 0) then 
+		writeln('El dni del propietario de la oficina es: ', v[posicion].dnipropietario);
+	else
+		writeln('No se encontró la oficina.');
+	
+	valortotalexp := retornovalortotalexp(v, diml);
+end.
