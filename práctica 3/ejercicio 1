@@ -57,7 +57,7 @@ begin
 		a^.HD := nil;
 	end
 	else
-		if (s.numero <= a^.dato.numero)	then 
+		if (s.numero <= a^.dato.numero)	then // tiene que ir el IGUAL ???? por qué habría dos socios iguales, no deberia ser if ... <... else if ... > ...?
 			agregar(a^.HI, s)
 		else
 			agregar(a^.HD, s);
