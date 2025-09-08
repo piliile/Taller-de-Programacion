@@ -124,6 +124,7 @@ var
 	code: integer;
 	direccion: string;
 begin
+	a := nil;
 	cargarArbolClientes(a);
 
 	writeln('Ingrese un código para buscar la cantidad de correos sin leer del cliente correspondiente al código: ');
