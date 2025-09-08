@@ -182,7 +182,8 @@ begin
 	imprimoEnOrden(a);
 	writeln('El arbol impreso en orden decreciente quedaría de la siguiente manera: ');
 	imprimoEnOrden2(a);
-	
+
+	edadmaxima := -1;
 	numeromaximo := -1;
 	writeln('El número de socio más grande es: ');
 	buscarEdadMaxima(a, edadmaxima, numeromaximo);
