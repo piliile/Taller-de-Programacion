@@ -1,0 +1,177 @@
+{4. La Feria del Libro necesita un sistema para obtener estadísticas sobre los libros
+presentados.
+a) Implementar un módulo que lea información de los libros. De cada libro se conoce:
+ISBN, código del autor y código del género (1: literario, 2: filosofía, 3: biología, 4: arte,
+5: computación, 6: medicina, 7: ingeniería) . La lectura finaliza con el valor 0 para el
+ISBN. Se sugiere utilizar el módulo leerLibro(). El módulo deber retornar dos
+estructuras:
+i. Un árbol binario de búsqueda ordenado por código de autor. Para cada código de autor
+debe almacenarse la cantidad de libros correspondientes al código.
+ii. Un vector que almacene para cada género, el código del género y la cantidad de libros del
+género.
+b) Implementar un módulo que reciba el vector generado en a), lo ordene por cantidad
+de libros de mayor a menor y retorne el nombre de género con mayor cantidad
+cantidad de libros.
+c) Implementar un módulo que reciba el árbol generado en a) y dos códigos. El módulo
+debe retornar la cantidad total de libros correspondientes a los códigos de autores
+entre los dos códigos ingresados (incluidos ambos).
+NOTA: Implementar el programa principal, que invoque a los incisos a, b y c.}
+program ejercico4;
+const
+	dfgenero = 7;
+	corte = 0;
+	vN: array [1..7] of string =  ('Literatura', 'Filosofía', 'Biología', 'Arte', 'Computación', 'Medicina', 'Ingeniería');
+type 
+	rangogenero = 1..dfgenero;
+	libro = record
+		isbn: integer;
+		codigoautor: integer;
+		genero: rangogenero;
+	end;
+	
+	datosCodAutor = record
+		codigoautor: integer;
+		cantidadlibrosdelautor: integer;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: datosCodAutor;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	datosGenero = record
+		genero: rangogenero;
+		cantidadlibrosdelgenero: integer;
+	end;
+	
+	vectorGeneros = array [rangogenero] of datosGenero;
+	
+	
+// MÓDULOS: 
+	{var v: array [1..7] of string = (‘literario’, ‘filosofía’, ‘arte‘, ‘biología’, ‘computación’, ‘medicina’, ‘ingeniería’);}
+	
+	
+// INICIO INCISO A: 
+	procedure leerLibro (var l : libro);
+	begin
+		l.isbn := Random(1000);
+		writeln('El isbn del libro es: ', l.isbn);
+		if (l.isbn <> corte) then begin
+			l.codigoautor := Random(300) + 100;
+			writeln('El codigo de autor del libro es: ', l.codigoautor);
+			l.genero := Random(7) + 1;
+			writeln('El genero del libro es: ', l.genero);
+		end;
+	end;
+	
+	procedure  agregarArbol(var a: arbol; l: libro);
+	begin	
+		if (a = nil) then begin 
+			new(a);
+			a^.dato.codigoautor := l.codigoautor;
+			a^.dato.cantidadlibrosdelautor := 1;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.codigoautor = l.codigoautor) then 
+				a^.dato.cantidadlibrosdelautor := a^.dato.cantidadlibrosdelautor + 1
+			else begin
+				if (a^.dato.codigoautor > l.codigoautor) then 
+					agregarArbol(a^.HI, l)
+				else
+					agregarArbol(a^.HD, l);
+			end;
+		end;
+	end;	
+	
+	procedure inicializarvectorgeneros(var v: vectorGeneros);
+	var
+		i: rangogenero;
+	begin
+		for i := 1 to dfgenero do begin
+			v[i].genero := i;
+			v[i].cantidadlibrosdelgenero := 0;
+		end;
+	end;
+	
+	procedure agregarVector(var v: vectorGeneros; g: rangogenero);
+	begin
+			v[g].cantidadlibrosdelgenero := v[g].cantidadlibrosdelgenero + 1;
+	end;
+	
+	procedure cargarEstructuras(var a: arbol; var v: vectorGeneros);
+	var
+		l: libro;
+	begin 
+		leerLibro(l);
+		inicializarvectorgeneros(v);
+		while (l.isbn <> corte) do begin 
+			agregarArbol(a, l);
+			agregarVector(v, l.genero);
+			leerLibro(l);
+		end;
+	end;
+	
+// FIN INCISO A
+
+	procedure ordenarMayorAMenor(var v: vectorGeneros; gM: string);
+	var
+		i, j, pos: integer;
+		item: datosGenero;
+		
+	begin
+		for i := 1 to (7-1) do begin 
+			pos := i;
+			for j := (i+1) to dfgenero do 
+				if (v[j].cantidadlibrosdelgenero > v[pos].cantidadlibrosdelgenero) then 
+					pos := j;
+			item := v[pos];
+			v[pos] := v[i];
+			v[i] := item;
+		end;
+		gM := vN[v[i].genero];
+	end;
+// FIN INCISO B	
+	
+// INICIO INCISO C	
+	function cantidadTotalEntreRango(a: arbol; c1, c2: integer): integer;
+	begin
+		if (a = nil) then 
+			cantidadTotalEntreRango: := 0
+		else begin
+			if (a^.dato.codigoautor >= c1) and (a^.dato.codigoautor <= c2) then 
+				cantidadTotalEntreRango := a^.dato.cantidadlibrosdelautor + cantidadTotalEntreRango(a^.HI, c1, c2) + cantidadTotalEntreRango(a^.HD, c1, c2)
+			else begin
+				if (a^.dato.codigoautor < c1) then 
+					cantidadTotalEntreRango := cantidadTotalEntreRango(a^.HD, c1, c2)
+				else
+					cantidadTotalEntreRango := cantidadTotalEntreRango(a^.HI, c1, c2);
+			end;
+		end;
+	end;
+	
+	
+// FIN INCISO C	
+	
+// PROGRAMA PRINCIPAL
+var
+	a: arbol;
+	v: vectorGeneros;
+	generoMaximo: string;
+	cod1, cod2, cantTot: integer;
+
+begin 	
+	a := nil;
+	cargarEstructuras(a, v); // A
+	
+	ordenarMayorAMenor(v, generoMaximo); // B
+	
+	writeln('Ingrese el codigo 1, será el límite inferior del rango: ');
+	readln(cod1);
+	writeln('Ingrese el codigo 2, será el límite superior del rango: ');
+	readln(cod2);
+	cantTot := cantidadTotalEntreRango(a, cod1, cod2);
+end.
