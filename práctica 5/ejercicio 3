@@ -1,0 +1,165 @@
+{3. PlayStation Store requiere procesar las compras realizadas por sus clientes durante el año 2023.
+a) Implementar un módulo que lea compras de videojuegos. De cada compra se lee
+código del videojuego, código de cliente y mes. La lectura finaliza con el código de
+cliente 0. Se sugiere utilizar el módulo leerCompra(). El módulo debe retornar un árbol
+binario de búsqueda ordenado por código de videojuego. En el árbol, para cada código
+de videojuego debe almacenarse una lista con código de cliente y mes perteneciente a
+cada compra.
+b) Implementar un módulo que reciba el árbol generado en a) y un código de videojuego.
+El módulo debe retornar la lista de las compras de ese videojuego.
+c) Implementar un módulo recursivo que reciba la lista generada en b) y un mes. El
+módulo debe retorne la cantidad de clientes que compraron en el mes ingresado.
+NOTA: Implementar el programa principal, que invoque a los incisos a, b y c.}
+
+program ejercicio3;
+const
+	corte = 0;
+
+type
+
+	compra = record
+		codigovideojuego: integer;
+		codigocliente: integer;
+		mes: integer;
+	end;
+	
+	mesycliente = record
+		mes: integer;
+		codigocliente: integer;
+	end;
+	
+	listavideojuegos = ^nodo;
+	nodo = record
+		dato: mesycliente;
+		sig: listavideojuegos;
+	end;
+	
+	videojuego = record
+		codigovideojuego: integer;
+		lista: listavideojuegos;
+	end;
+	
+	arbol = ^nodo2; 
+	nodo2 = record
+		dato: videojuego;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	
+// módulos
+	
+	
+// INICIO INCISO A
+	procedure leerCompra (var c : compra);
+	begin
+		c.codigocliente := random(200);
+		writeln('El codigo de cliente de la compra es: ', c.codigocliente);
+		if (c.codigocliente <> corte) then begin
+			c.mes := random(12) + 1;
+			writeln('El mes de la compra es: ', c.mes);
+			c.codigovideojuego := random(200) + 1000;
+			writeln('El codigo de videojuego de la compra es: ', c.codigovideojuego);
+		end;
+	end;
+
+	procedure agregarAdelante(var l: listavideojuegos; c: compra);
+	var
+		nue: listavideojuegos;
+	begin
+		new(nue);
+		nue^.dato.mes := c.mes;
+		nue^.dato.codigocliente := c.codigocliente;
+		nue^.sig := l;
+		l := nue;
+	end;
+
+	procedure agregar(var a: arbol; c: compra);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato.codigovideojuego := c.codigovideojuego;
+			a^.dato.lista := nil;
+			agregarAdelante(a^.dato.lista, c);
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.codigovideojuego = c.codigovideojuego) then 
+				agregarAdelante(a^.dato.lista, c)
+			else	
+				if (a^.dato.codigovideojuego > c.codigovideojuego) then 
+					agregar(a^.HI, c)
+				else
+					agregar(a^.HD, c);
+		end;
+	end;
+	
+	
+	procedure cargarArbol(var a: arbol);
+	var
+		c: compra;
+	begin
+		leerCompra(c);
+		while (c.codigocliente <> corte) do begin 
+			agregar(a, c);
+			leerCompra(c);
+		end;
+	end;
+//FIN INCISO A
+
+// INICIO INCISO B
+	procedure listaDelVideojuego(a: arbol; codvid: integer; var l: listavideojuegos);
+	begin
+		if (a <> nil) then begin 
+			if (a^.dato.codigovideojuego = codvid) then 
+				l := a^.dato.lista
+			else begin
+				if(a^.dato.codigovideojuego > codvid) then
+					listaDelVideojuego(a^.HI, codvid, l)
+				else
+					listaDelVideojuego(a^.HD, codvid, l);
+			end;
+		end
+		else
+			l := nil;
+	end;
+	
+// FIN INCISO B	
+	
+// INICIO INCISO C
+	function retornoCantidadClientesC(l: listavideojuegos; m: integer): integer;
+	begin
+		if (l = nil) then 
+			retornoCantidadClientesC := 0
+		else begin
+			if (l^.dato.mes = m) then 
+				retornoCantidadClientesC := 1 + retornoCantidadClientesC(l^.sig, m)
+			else
+				retornoCantidadClientesC := retornoCantidadClientesC(l^.sig, m);
+		end;
+	end;
+
+// FIN INCISO C
+
+
+// programa principal
+var
+	a: arbol;
+	l: listavideojuegos;
+	codigovid, month, cantidadclientesenmes: integer;
+begin
+	Randomize;
+	a := nil;
+	cargarArbol(a); // A
+	
+	writeln('Ingrese un código de videojuego, para retonar la lista de las compras de dicho código: ');
+	readln(codigovid);
+	listaDelVideojuego(a, codigovid, l); // B
+	
+	writeln('Ingrese un mes, para analizar la cantidad de clientes que compraron en dicho mes, de la lista retornada en B: ');
+	readln(month);
+	cantidadclientesenmes := retornoCantidadClientesC(l, month); // C
+	writeln(cantidadclientesenmes); // no lo pide. 
+end.
+
