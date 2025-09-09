@@ -1,0 +1,189 @@
+program parcial090924;
+const
+	corte = 0;
+	dfdiagnostico = 'F';
+type
+	rangodiagnostico = 'A'..dfdiagnostico;
+	
+	atencion = record
+		matricula: integer;
+		dnipaciente: integer;
+		dia: integer;
+		diagnostico: char;
+	end;
+	
+	datoMatricula = record
+		matricula: integer;
+		cantidadAtenciones: integer;
+	end;
+		
+	arbol = ^nodoArbol;
+	nodoArbol = record
+		dato: datoMatricula;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	listaAtendidos = ^nodoLista;
+	nodoLista = record
+		dato: integer; // guarda los DNI de los pacientes atendidos.
+		sig: listaAtendidos;
+	end;
+	
+	vector = array ['A'..'F'] of listaAtendidos;
+	
+	vectorcontador = array ['A'..'F'] of integer;
+	
+	
+// módulos: 
+	procedure leerAtencion(var a: atencion);
+	var
+		v: array [1..6] of char = ('A', 'B', 'C', 'D', 'E', 'F');
+	begin 
+		a.dnipaciente := random(5000);
+		if (a.dnipaciente <> 0) then begin
+			a.matricula := random(1000) + 2000;
+			a.dia := random(31) + 1;
+			a.diagnostico := v[random(6) + 1];
+		end;
+	end;
+	
+	procedure agregar(var a: arbol; matri: integer);
+	begin 
+		if (a = nil) then begin
+			new(a);
+			a^.dato.matricula := matri;
+			a^.dato.cantidadAtenciones := 1;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin 
+			if (a^.dato.matricula = matri) then 
+				a^.dato.cantidadAtenciones := a^.dato.cantidadAtenciones + 1;
+			else begin
+				if (a^.dato.matricula > matri) then 
+					agregar(a^.HI, matri)
+				else
+					agregar(a^.HD, matri);
+			end;
+		end;
+	end;
+	
+	procedure inicializarVector(var v: vector);
+	var
+		i: rangodiagnostico;
+	begin
+		for i := 'A' to dfdiagnostico do 
+			v[i] := nil;
+	end;
+	
+	procedure agregarAdelante(l: listaAtendidos; dni: integer);
+	var
+		nue: listaAtendidos;
+	begin	
+		new(nue);
+		nue^.dato := dni;
+		nue^.sig := l;
+		l := nue;
+	end;
+	
+	procedure cargarVector(var v: vector; diagnos: char; dnipac: integer);
+	begin
+		agregarAdelante(v[diagnos], dnipac);
+	end;
+	
+	
+	procedure cargarEstructuras(var a: arbol; var v: vector);
+	var
+		at: atencion;
+	
+	begin
+	
+		leerAtencion(at);
+		while(at.dnipaciente <> corte) do begin
+			agregar(a, at.matricula);
+			cargarVector(v, at.diagnostico, at.dni);
+			leerAtencion(a);
+		end;
+	end;
+	
+	
+	
+	function retornoCantidadTotalAt(a: arbol; m: integer): integer;
+	
+	begin 
+		if (a = nil) then 
+			retornoCantidadTotalAt := 0
+		else begin
+			if (a^.dato.matricula > m) then 
+				retornoCantidadTotalAt := a^.dato.cantidadAtenciones + retornoCantidadTotalAt(a^.HI, m) + retornoCantidadTotalAt(a^.HD, m) 
+			else
+				retornoCantidadTotalAt := retornoCantidadTotalAt(a^.HD, m);
+		end;
+	end;
+	
+	procedure inicializarVectorCont(var vc: vectorcontador);
+	var
+		i: rangodiagnostico;
+	begin
+		for i := 'A' to 'F' do 
+			v[i] := 0;
+	end;
+	
+	procedure cuentoTotal(l: listaAtendidos; var c: integer);
+	begin
+		if (l <> nil) then begin 
+			c := c + 1;
+			cuentoTotal(l^.sig, c);
+		end;
+	end;
+	
+	function maximo (vc: vectorcontador): char;
+	var
+		max: integer;
+		letra: char;
+		i: rangodiagnostico;
+	begin 
+		max := -1;
+		letra := 'Z';
+		for i := 'A' to 'F' do begin
+			if (vc[i] > max) then begin
+				max := vc[i];
+				letra := i;
+			end;
+		end;
+		maximo := letra;
+	end;
+	
+	
+	function retornoMayorDiagPacientesAt(v: vector): char;
+	var
+		i: rangodiagnostico;
+		vc: vectorcontador;
+	begin
+		inicializarVectorCont(vc);
+		for i := 'A' to 'F' do 
+			if (v[i] <> nil) then 
+				cuentoTotal(v[i], vc[i]);
+		retornoMayorDiagPacientesAt := maximo(vc);	
+	end;
+	
+	
+	
+// programa principal
+
+var
+	a: arbol;
+	v: vector;
+	matric: integer;
+	
+begin 
+	a := nil;
+	cargarEstructuras(a, v);
+	
+	writeln('Ingrese una matricula para así retornar la cantidad total de atenciones realizadas por médicos con matricula superior a la ingresada: ')
+	readln(matric);
+	retornoct := retornoCantidadTotalAt(a, matric);
+	
+	retornomcpa := retornoMayorDiagPacientesAt(v);
+end.
