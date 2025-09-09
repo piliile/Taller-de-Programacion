@@ -1,0 +1,283 @@
+{4. Una biblioteca nos ha encargado procesar la información de los préstamos realizados
+durante el año 2021. De cada préstamo se conoce el ISBN del libro, el número de socio, día
+y mes del préstamo y cantidad de días prestados. Implementar un programa con:
+a. Un módulo que lea préstamos y retorne 2 estructuras de datos con la información de
+los préstamos. La lectura de los préstamos finaliza con ISBN 0. Las estructuras deben
+ser eficientes para buscar por ISBN.
+i. En una estructura cada préstamo debe estar en un nodo. Los ISBN repetidos
+insertarlos a la derecha.
+ii. En otra estructura, cada nodo debe contener todos los préstamos realizados al ISBN.
+(prestar atención sobre los datos que se almacenan).
+b. Un módulo recursivo que reciba la estructura generada en i. y retorne el ISBN más
+grande.
+c. Un módulo recursivo que reciba la estructura generada en ii. y retorne el ISBN más
+pequeño.
+d. Un módulo recursivo que reciba la estructura generada en i. y un número de socio. El
+módulo debe retornar la cantidad de préstamos realizados a dicho socio.
+e. Un módulo recursivo que reciba la estructura generada en ii. y un número de socio. El
+módulo debe retornar la cantidad de préstamos realizados a dicho socio.
+f. Un módulo que reciba la estructura generada en i. y retorne una nueva estructura
+ordenada ISBN, donde cada ISBN aparezca una vez junto a la cantidad total de veces
+que se prestó.
+g. Un módulo que reciba la estructura generada en ii. y retorne una nueva estructura
+ordenada ISBN, donde cada ISBN aparezca una vez junto a la cantidad total de veces
+que se prestó.
+h. Un módulo recursivo que reciba la estructura generada en g. y muestre su contenido.
+i. Un módulo recursivo que reciba la estructura generada en i. y dos valores de ISBN. El
+módulo debe retornar la cantidad total de préstamos realizados a los ISBN
+comprendidos entre los dos valores recibidos (incluidos).
+j. Un módulo recursivo que reciba la estructura generada en ii. y dos valores de ISBN. El
+módulo debe retornar la cantidad total de préstamos realizados a los ISBN
+comprendidos entre los dos valores recibidos (incluidos).}
+
+	
+program ejercicio4;
+const 
+	corte = 0;
+
+type
+	
+	dym = record
+		dia: integer;
+		mes: integer;
+	end;
+	
+	prestamo = record
+		isbn: integer;
+		numerosocio: integer;
+		diames: dym;
+		cantidaddiasprestados: integer;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: prestamo;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	prestamo2 = record
+		numerosocio: integer;
+		diames: dym;
+		cantidaddiasprestados: integer;
+	end;
+	
+	lista = ^nodo2;
+	nodo2 = record
+		dato: prestamo2;
+		sig: lista;
+	end;
+	
+	pres2 = record
+		isbn: integer;
+		l: lista;
+	end;
+	
+	arbol2 = ^nodo3;
+	nodo3 = record 
+		dato: pres2;
+		HI: arbol2;
+		HD: arbol2;
+	end;
+	
+	isbnYCantidadTotal = record
+		isbn: integer;
+		cantidadtotalprestado: integer;
+	end;
+	
+	lista2 = ^nodo4;
+	nodo4 = record
+		dato: isbnYCantidadTotal;
+		sig: lista2;
+	end;
+	
+// módulos
+	procedure generardiaymes(var dm: dym);
+	begin 
+		dm.dia := random(31)+1;
+		dm.mes := random(12)+1;
+		writeln('El dia es: ', dm.dia);
+		writeln('El mes es: ', dm.mes);
+	end;
+	
+	procedure leerprestamos(var p: prestamo);
+	begin 
+		writeln('Ingrese el ISBN del libro: ');
+		readln(p.isbn);
+		if (p.isbn <> corte) then begin 
+			writeln('Ingrese el numero de socio: ');
+			readln(p.numerosocio);
+			generardiaymes(p.diames);
+			writeln('Ingrese la cantidad de dias prestados: ');
+			readln(p.cantidaddiasprestados);
+		end;
+	end;
+
+	procedure agregarArbolUno(var a: arbol; p: prestamo);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato := p;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.isbn > p.isbn) then 
+				agregarArbolUno(a^.HI, p)
+			else
+				agregarArbolUno(a^.HD, p);
+		end;
+	end;
+	
+	procedure leerprestamos2(var p2: prestamo2);
+	begin
+		writeln('Ingrese el numero de socio del segundo prestamo: ');
+		readln(p2.numerosocio);
+		generardiaymes(p2.diames);
+		writeln('Ingrese la cantidad de días prestados: ');
+		readln(p2.cantidaddiasprestados);
+	end;
+	
+	procedure agregarAdelante(var l: lista; p2: prestamo2);
+	var
+		nue: lista;
+	begin	
+		new(nue);
+		nue^.dato := p2;
+		nue^.sig := l;
+		l := nue;
+	end;
+	
+	procedure agregarArbolDos(var a2: arbol2; p2: prestamo2; isbnactual: integer);
+	begin 
+		if (a2 = nil) then begin
+			new(a2);
+			a2^.dato.isbn := isbnactual;
+			a2^.dato.l := nil;
+			agregarAdelante(a2^.dato.l, p2);
+			a2^.HI := nil;
+			a2^.HD := nil;
+		end
+		else begin 
+			if (a2^.dato.isbn = isbnactual) then 
+				agregarAdelante(a2^.dato.l , p2)
+			else begin
+				if (a2^.dato.isbn > isbnactual) then 
+					agregarArbolDos(a2^.HI, p2, isbnactual)
+				else
+					agregarArbolDos(a2^.HD, p2, isbnactual);
+			end;
+		end;
+	end;
+	
+	procedure cargoValores(var p2: prestamo2; p: prestamo);
+	begin
+		p2.numerosocio := p.numerosocio;
+		p2.diames.dia := p.diames.dia;
+		p2.diames.mes := p.diames.dia;
+		p2.cantidaddiasprestados := p.cantidaddiasprestados;
+	end;
+		
+	procedure cargarArboles(var a: arbol; var a2: arbol2);
+	var
+		p: prestamo;
+		p2: prestamo2;
+	begin
+		leerprestamos(p);
+		while(p.isbn <> corte) do begin 
+			agregarArbolUno(a, p);
+			cargoValores(p2, p);
+			agregarArbolDos(a2, p2, p.isbn);
+			leerprestamos(p);
+		end;
+	end;
+	
+	function retornoISBNMaximo(a: arbol): integer;
+	begin
+		if (a = nil) then 
+			retornoISBNMaximo := -1
+		else begin
+			if (a^.HD <> nil) then 
+				retornoISBNMaximo := retornoISBNMaximo(a^.HD)
+			else
+				retornoISBNMaximo := a^.dato.isbn;
+		end;
+	end;
+	
+	function retornoISBNMinimo(a2: arbol2): integer;
+	begin 
+		if (a2 = nil) then 
+			retornoISBNMinimo := 9999
+		else begin
+			if (a2^.HI <> nil) then 
+				retornoISBNMinimo := retornoISBNMinimo(a2^.HI)
+			else
+				retornoISBNMinimo := a2^.dato.isbn;
+		end;
+	end;
+
+	function retornoCantPrestArbol1(a: arbol; numsoc: integer): integer;
+	begin 
+		if (a = nil) then 
+			retornoCantPrest := 0
+		else begin
+			if (a^.dato.numerosocio = numsoc) then 
+				retornoCantPrestArbol1 := 1 + retornoCantPrestArbol1(a^.HI, numsoc) + retornoCantPrestArbol1(a^.HD, numsoc)
+			retornoCantPrestArbol1 := retornoCantPrestArbol1(a^.HI, numsoc) + retornoCantPrestArbol1(a^.HD, numsoc);
+		end;
+	end;
+	
+	function retornoCantPrestArbol2(a2: arbol2; numsoc: integer): integer;
+	
+		function cuentoPrestamosLista(l: lista; numsoc: integer): integer;
+		begin 
+			if (l = nil) then 
+				cuentoPrestamosLista := 0
+			else begin
+				if (l^.dato.numerosocio = numsoc) then 
+					cuentroPrestamoLista := 1 + cuentoPrestamosLista(l^.sig, numsoc)
+				else
+					cuentroPrestamoLista := cuentroPrestamoLista(l^.sig, numsoc);
+			end;
+		end;
+		
+	begin
+		if (a2 = nil) then 
+			retornoCantPrestArbol2 := 0
+		else
+			retornoCantPrestArbol2 := retornoCantPrestArbol2(a2^.HI, numsoc) + retornoCantPrestArbol2(a^.HD, numsoc);
+	end;
+	
+	end;
+
+	procedure nuevaEstructura(a: arbol; var l2: lista2);
+	begin
+		
+	end;
+
+var
+	a: arbol;
+	a2: arbol2;
+	numerosoc: integer;
+	l2: lista2;
+begin
+	a := nil;
+	a2 := nil;
+	cargarArboles(a, a2);
+	
+	writeln('El ISBN máximo del arbol 1 es: ', retornoISBNMaximo(a));
+	
+	writeln('El ISBN mínimo del arbol 2, es: ', retornoISBNMinimo(a2));
+	
+	writeln('Lea un número de socio para retonar la cantidad de préstamos realizados por el mismo del arbol 1: ');
+	readln(numerosoc);
+	writeln('La cantidad de préstamos del arbol 2 del número de socio: ', numerosoc, ' es: ', retornoCantPrestArbol1(a, numerosoc));
+	
+	writeln('Lea un número de socio para retonar la cantidad de préstamos realizados por el mismo del arbol 2: ');
+	readln(numerosoc);
+	writeln('La cantidad de préstamos del arbol 2 del número de socio: ', numerosoc, ' es: ', retornoCantPrestArbol2(a2, numerosoc));
+	
+	l2 := nil;
+	nuevaEstructura(a, l2);
+end.
+	
