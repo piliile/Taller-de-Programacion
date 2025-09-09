@@ -1,0 +1,329 @@
+{2. Una agencia dedicada a la venta de autos ha organizado su stock y, tiene la información de
+los autos en venta. Implementar un programa que:
+a) Genere la información de los autos (patente, año de fabricación (2015..2024), marca,
+color y modelo, finalizando con marca ‘MMM’) y los almacene en dos estructuras de
+datos:
+i. Una estructura eficiente para la búsqueda por patente.
+ii. Una estructura eficiente para la búsqueda por marca. Para cada marca se deben
+almacenar juntas las patentes y colores de los autos pertenecientes a ella.
+b) Invoque a un módulo que reciba la estructura generado en a) i y una marca y retorne la
+cantidad de autos de dicha marca que posee la agencia.
+c) Invoque a un módulo que reciba la estructura generado en a) ii y una marca y retorne
+la cantidad de autos de dicha marca que posee la agencia.
+d) Invoque a un módulo que reciba el árbol generado en a) i y retorne una estructura con
+la información de los autos agrupados por año de fabricación.
+e) Invoque a un módulo que reciba el árbol generado en a) i y una patente y devuelva el
+modelo del auto con dicha patente.
+f) Invoque a un módulo que reciba el árbol generado en a) ii y una patente y devuelva el
+color del auto con dicha patente.}
+
+// sólo cambie datos del ejercicio del 2024.
+
+program ejercicio2;
+const
+	corte = 'MMM';
+	anioIni = 2015;
+	anioFin = 2024;
+
+type
+	rangoanio = anioIni..anioFin;
+	
+	auto = record
+		patente: string;
+		anio: rangoanio;
+		marca: string;
+		modelo: string;
+		color: string;
+	end;
+	
+	arbol1 = ^nodo1;
+	nodo1 = record
+		dato: auto;
+		HI: arbol1;
+		HD: arbol1;
+	end;
+	
+	autoMarca = record
+		patente: string;
+		color: string;
+	end;
+	
+	listaAutos = ^nodo2;
+	nodo2 = record
+		dato: autoMarca;
+		sig: listaAutos;
+	end;
+	
+	datosMarca = record
+		marca: string;
+		lista: listaAutos;
+	end;
+	
+	arbol2 = ^nodo3;
+	nodo3 = record
+		dato: datosMarca;
+		HI: arbol2;
+		HD: arbol2;
+	end;
+	
+	autoMismoAnio = record
+		patente: string;
+		modelo: string;
+		marca: string;
+		color: string;
+	end;
+	
+	listaAutosMismoAnio = ^nodo4;
+	nodo4 = record
+		dato: autoMismoAnio;
+		sig: listaAutosMismoAnio;
+	end;
+	
+	vectorAnios = array [rangoanio] of listaAutosMismoAnio;
+// módulos
+
+// INICIO INCISO A
+	procedure leerAuto(var a: auto);
+	begin 
+		writeln('Ingrese la marca del auto: ');
+		readln(a.marca);
+		
+		if (a.marca <> corte) then begin	
+			writeln('Ingrese la patente del auto: ');
+			readln(a.patente);
+			writeln('Ingrese el año de fabricación, entre 2010 y 2018: ');
+			readln(a.anio);
+			writeln('Ingrese el modelo del auto: ');
+			readln(a.modelo);
+			writeln('Ingrese el color del auto: ');
+			readln(a.color);
+		end;
+	end;
+	
+	procedure agregar1(var a1: arbol; a: auto);
+	begin 
+		if (a1 = nil) then begin 
+			new(a1);
+			a1^.dato := a;
+			a1^.HI := nil;
+			a1^.HD := nil;
+		end
+		else begin
+			if (a1^.dato.patente > a.patente) then 
+				agregar1(a1^.HI, a)
+			else
+				agregar2(a1^.HD, a);
+		end;
+	end;
+ 	
+ 	procedure agregarAdelante(var l: listaAutos; a: auto);
+ 	var
+		nue: listaAutos;
+	begin
+		new(nue);
+		nue^.dato.patente := a.patente;
+		nue^.dato.modelo := a.modelo;
+		nue^.dato.anio := a.anio;
+		nue^.dato.color := a.color
+		nue^.sig := l;
+		l := nue;
+	end;
+ 	
+ 	procedure agregar2(var a2: arbol2; a: auto);
+ 	begin 
+		if (a2 = nil) then begin 
+			new(a2);
+			a2^.dato.marca := a.marca;
+			a2^.dato.lista := nil;
+			agregarAdelante(a2^.dato.lista, a);
+			a2^.HI := nil;
+			a2^.HD := nil;
+		end
+		else begin
+			if (a2^.dato.marca = a.marca) then 
+				agregarAdelante(a2^.dato.lista, a)
+			else begin
+				if (a2^.dato.marca > a.marca) then 
+					agregar2(a2^.HI, a)
+				else
+					agregar2(a2^.HD, a);
+			end;
+		end;
+	end;
+	
+	procedure cargarArboles(var a1: arbol1; var a2: arbol2);
+	var
+		a: auto;
+	begin
+		leerAuto(a);
+		while (a.marca <> corte) do begin 	
+			agregar1(a1, a);
+			agregar2(a2, a);
+			leerAuto(a);
+		end;
+	end;
+// FIN INCISO A
+	
+// INICIO INCISO B
+	function retornoCantidadAutosB(a1: arbol1; m: string): integer;	
+	begin
+		if (a1 = nil) then 
+			retornoCantidadAutosB := 0
+		else begin 
+			if (a1^.dato.marca = m) then 
+				retornoCantidadAutosB := 1 + retornoCantidadAutosB(a1^.HI, m) + retornoCantidadAutosB(a1^.HD, m) 
+			else
+				retornoCantidadAutosB := retornoCantidadAutosB(a1^.HI, m) + retornoCantidadAutosB(a1^.HD, m);
+		end;
+	end;
+//FIN INCISO B
+
+// INICIO INCISO C
+	function retornoCantidadAutosC(a2: arbol2; m: string): integer;
+		
+		function cuentoCantidadNodosC(l: listaAutos): integer
+		begin
+			if (l = nil) then 
+				cuentoCantidadNodosC := 0
+			else
+				cuentoCantidadNodosC := 1 + cuentoCantidadNodosC(l^.sig);
+		end;
+		
+	begin 
+		if (a2 = nil) then 
+			retornoCantidadAutosC := 0
+		else begin 
+			if (a2^.dato.marca = m) then 
+				retornoCantidadAutosC := cuentoCantidadNodosC(a2^.dato.lista)
+			else begin
+				if (a2^.dato.marca > m)
+					retornoCantidadAutosC := retornoCantidadAutosC(a2^.HI, m)
+				else
+					retornoCantidadAutosC := retornoCantidadAutosC(a2^.HD, m);
+			end;
+		end;
+	end;
+// FIN INCISO C	
+	
+// INICIO INCISO D
+	procedure inicializarVectorAnios(var v: vectorAnios);
+	var
+		i: rangoanio;
+	begin 
+		for i := anioIni to anioFin do 				
+			v[i] := nil;
+	end;
+	
+	procedure nuevaEstructura(a1: arbol1; var v: vectorAnios);
+		
+		procedure agregarAdelante2(var l2: listaAutosMismoAnio; a: auto);
+		var	
+			nue: listaAutosMismoAnio;
+		begin
+			new(nue);
+			nue^.dato.patente := a.patente;
+			nue^.dato.marca := a.marca;
+			nue^.dato.modelo := a.modelo;
+			nue^.dato.modelo := a.color;
+			nue^.sig := l2;
+			l2 := nue;
+		end;
+	
+	begin 
+		if (a1 <> nil) then begin
+			nuevaEstructura(a1^.HI, v);
+			agregarAdelante2(v[a1^.dato.anio], a1^.dato);
+			nuevaEstructura(a1^.HD, v);
+		end;
+	end;
+	end;
+// FIN INCISO D
+
+// INICIO INCISO E
+	function modeloPatenteE(a1: arbol1; pat: string): string;
+	begin
+		if (a1 = nil) then 
+			modeloPatenteE := ''
+		else begin
+			if (a1^.dato.patente = pat) then 
+				modeloPatenteE := a1^.dato.modelo
+			else begin
+				if (a1^.dato.patente > pat) then 
+					modeloPatenteE(a1^.HI, pat)
+				else
+					modeloPatenteE(a1^.HD, pat);
+			end;
+		end;
+	end;
+// FIN INCISO E
+
+// INICIO INCISO F
+{Invoque a un módulo que reciba el árbol generado en a) ii y una patente y devuelva el
+modelo del auto con dicha patente.}
+
+	function colorPatenteF(a2: arbol2; pat: string): string;
+		function buscoPatente(l: lista; pat: string): string;
+		begin 
+			if (l <> nil) then begin
+				if (l^.dato.patente = pat) then 
+					buscoPatente := l^.dato.color
+				else
+					buscoPatente := buscoPatente(l^.sig, pat);
+			end
+			else
+				buscoPatente := '';
+		end;
+		
+	var
+		auxColor: string;		
+	begin
+		if (a2 = nil) then 
+			colorPatenteF := ''
+		else begin
+			auxColor := buscoPatente(a2^.dato.lista, pat)
+			if (auxColor <> '') then 
+				colorPatenteF := auxColor
+			else
+				auxColor := buscoPatente(a2^.HI, pat)
+				if (auxColor <> '') THEN 
+					colorPatenteF := auxColor
+				else
+					colorPatenteF := colorPatenteF(a2^.HD, pat);
+		end;		
+	end;
+
+// FIN INCISO F
+
+// programa principal
+var
+	a1: arbol1;
+	a2: arbol2;
+	marcabuscar, pat, modelopat, colorpat: string;
+	cantidadAutosMarcaBuscarArbol1, cantidadAutosMarcaBuscarArbol2: integer;
+	v: vectorAnios;
+	
+begin
+	a1 := nil;
+	a2 := nil;
+	cargarArboles(a1, a2); // A
+	
+	writeln('Ingrese una marca de auto para retonar la cantidad de autos de dicha marca, del arbol 1: ');
+	readln(marcabuscar);
+	cantidadAutosMarcaBuscarArbol1 := retornoCantidadAutosB(a1, marcabuscar); // B
+	
+	writeln('Ingrese una nueva marca de auto (o la misma), para retonar la cantidad de autos de dicha marca, del arbol 2: ');
+	readln(marcabuscar);
+	cantidadAutosMarcaBuscarArbol2 := retornoCantidadAutosC(a2, marcabuscar);
+
+
+	inicializarVectorAnios(v);
+	nuevaEstructura(a1, v);
+	
+	writeln('Ingrese una patente para retornar el modelo de la misma, del arbol 1: ');
+	readln(pat);
+	modelopat := modeloPatenteE(a1, pat);
+	
+	writeln('Ingrese otra patente, para retornar el color de la misma, del arbol 2: ');
+	readln(pat);
+	colorpat := colorPatenteF(a2, pat);
+end.
