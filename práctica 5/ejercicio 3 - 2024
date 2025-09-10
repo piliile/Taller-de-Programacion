@@ -1,0 +1,261 @@
+{3. Un supermercado requiere el procesamiento de sus productos. De cada producto se
+conoce código, rubro (1..10), stock y precio unitario. Se pide:
+a) Generar una estructura adecuada que permita agrupar los productos por rubro. A su
+vez, para cada rubro, se requiere que la búsqueda de un producto por código sea lo
+más eficiente posible. El ingreso finaliza con el código de producto igual a 0.
+b) Implementar un módulo que reciba la estructura generada en a), un rubro y un código
+de producto y retorne si dicho código existe o no para ese rubro.
+c) Implementar un módulo que reciba la estructura generada en a), y retorne, para cada
+rubro, el código y stock del producto con mayor código.
+d) Implementar un módulo que reciba la estructura generada en a), dos códigos y
+retorne, para cada rubro, la cantidad de productos con códigos entre los dos valores
+ingresados.}
+program ejercicio3;
+const
+	corte = 0;
+	dfrubro = 10;
+
+type
+	rangorubro = 1..dfrubro;
+	
+	producto = record
+		codigo: integer;
+		rubro: rangorubro;
+		stock: integer;
+		precioUnitario: real;
+	end;
+	
+	productoSinRu = record
+		codigo: integer;
+		stock: integer;
+		precioUnitario: real;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: productoSinRu;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	vectorRubros = array [rangorubro] of arbol;
+	
+	codigoYStock = record
+		codigo: integer;
+		stock: integer;
+	end;
+	
+	vectorDeCodigoMayor = array [rangorubro] of codigoYStock; // INCISO C, solo
+	
+	vectorCantidadProductos = array [rangorubro] of integer; // INCISO D, solo guarda la cantidad de productos (codigos entre rango)
+	
+// MÓDULOS
+
+// INICIO INCSO A	
+	procedure leerProducto (var p: producto);
+	begin
+		p.codigo := random(200);
+		writeln('El codigo de producto es: ', p.codigo);
+		if (p.codigo <> corte) then begin 
+			p.rubro := random(10) + 1;
+			writeln('El rubro es: ', p.rubro);
+			p.stock := random (300);
+			writeln('El stock del producto es: ', p.stock);
+			p.precioUnitario := random(1000) + 2000;
+			writeln('El precio unitario del producto es: ', p.precioUnitario)
+		end;
+	end;
+
+	procedure inicializoVectorRubro (var v: vectorRubros);
+	var
+		i: rangorubro;
+	begin
+		for i := 1 to dfrubro do 
+			v[i] := nil;
+	end;
+	
+	procedure agregar(var a: arbol; psr: productoSinRu);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato := psr;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.codigo = psr.codigo) then  // preguntar.
+				a^.dato.stock := a^.dato.stock + psr.stock;
+				//a^.dato.precio := a^.dato.precio + psr.precio --> el precio del producto va a ser siempre el mismo, no se actualiza.
+			else begin
+				if (a^.dato.codigo > psr.codigo) then 
+					agregar(a^.HI, psr)
+				else
+					agregar(a^.HD, psr);
+			end;
+		end;
+	end;
+	
+	procedure cargarProductoSR(var psr: productoSinRu; p: producto);
+	begin
+		psr.codigo := p.codigo;
+		psr.stock := p.stock;
+		psr.precioUnitario := p.precioUnitario;
+	end;
+	
+	procedure cargarEstructuraA(var v: vector);
+	var
+		p: producto;
+		psr: productoSinRu;
+	begin 
+		leerProducto(p);
+		inicializoVectorRubro(v);
+		while (p.codigo <> corte) do begin 
+			cargarProductoSR(psr, r);
+			agregar(v[p.rubro], psr);
+			leerProducto(p);
+		end;
+	end;
+// FIN INCISO A
+
+// INICIO INCISO B
+//b) Implementar un módulo que reciba la estructura generada en a), un rubro y un código de producto y retorne si dicho código existe o no para ese rubro.
+
+	function buscoSiExisteRubro(v: vectorRubros; ru: rangorubro; cp: integer): boolean;
+		
+		function buscoSiExisteCodigo(a: arbol; cp: integer): boolean;
+		begin
+			if (a = nil) then 
+				buscoSiExisteCodigo := false
+			else begin
+				if (a^.dato.codigo = cp) then 
+					buscoSiExisteCodigo := true
+				else begin
+					if (a^.dato.codigo > cp) then  // APROVECHO EL ORDEN DEL ARBOL!!!!
+						buscoSiExisteCodigo := buscoSiExisteCodigo(a^.HI, cp)
+					else
+						buscoSiExisteCodigo := buscoSiExisteCodigo(a^.HD, cp);
+				end;
+			end;
+		end;
+		
+	begin
+		buscoSiExiste := buscoSiExisteCodigo(v[ru], cp)
+	end;
+// FIN INCISO B
+
+// INICO INCISO C
+{c) Implementar un módulo que reciba la estructura generada en a), y retorne, para cada
+rubro, el código y stock del producto con mayor código.} // supongo que tengo que hacer un vector que sea el que se retonrne, y que guarde en c pos, el cod y stock del prod con max cod
+
+	procedure inicializarVectorDeCodigoMayor(var vcm: vectorDeCodigoMayor);
+	var
+		i: rangorubro;
+	begin 
+		for i := 1 to dfrubro do begin 
+			vcm[i].codigo := -1
+			vcm[i].stock := 0;
+		end;
+	end;
+	
+	procedure reciboYRetornoNuevoVector(v: vectorRubros; var vcm: vectorDeCodigoMayor);
+		procedure buscoMaximo(a: arbol; var codM, stockCodM: integer);
+		begin
+			
+			if (a <> nil) then begin
+				if (a^.HD = nil) then begin 
+					codM := a^.dato.codigo;
+					stockCodM := a^.dato.stock;
+				end
+				else
+					buscoMaximo(a^.HD, codM, stockCodM);
+			end
+			// else???? que podría poner. preguntar.
+			else begin
+				codM := -1;
+				stockCodM := 0; // pasa que si ya lo mande con estos datos al codigo maixmo y al stock del codigo maximo, tendria que hacer falta que vuelva a declararlos asi?
+			end;
+		end;
+	
+	
+	var
+		i: rangorubro;
+		codigoMaximo, stockDelCodMax: integer;
+	begin
+		for i := 1 to dfrubro do begin
+			codigoMaximo := -1;
+			buscoMaximo(v[i], codigoMaximo, stockDelCodMax);
+			vcm[i].codigo := codigoMaximo;
+			vcm[i].stock := stockDelCodMax;
+		end;
+	end;
+// FIN INCISO C
+
+// INICIO INCISO D
+{d) Implementar un módulo que reciba la estructura generada en a), dos códigos y retorne, para cada rubro, 
+la cantidad de productos con códigos entre los dos valores ingresados.}
+	
+
+		procedure inicializarVectorCantidadProductos(var vcp: vectorCantidadProductos);
+		var
+			i: rangorubro;
+		begin
+			for i := 1 to dfrubro do 
+				vcp[i] := 0;
+		end;
+	
+		procedure reciboYRetornoNuevoVector(v: vectorRubros; cod1, cod2: integer; var vcp: vectorCantidadProductos)
+			function retornoCantidadEntreRango(a: arbol; cod1, cod2: integer): integer;
+			begin
+				if (a = nil) then 
+					retornoCantidadEntreRango := 0
+				else begin 
+					if (a^.dato.codigo >= cod1) and (a^.dato.codigo <= c2) then 
+						retornoCantidadEntreRango := 1 + retornoCantidadEntreRango(a^.HI, cod1, cod2) + retornoCantidadEntreRango(a^.HD, cod1, cod2)
+					else begin
+						if (a^.dato.codigo < cod1) then
+							retornoCantidadEntreRango := retornoCantidadEntreRango(a^.HD, cod1, cod2)
+						else	
+							retornoCantidadEntreRango := retornoCantidadEntreRango(a^.HI, cod1, cod2);
+					end;
+				end;
+			end;
+		
+		var
+			i: rangorubro;
+			cantidad: integer;
+		begin
+			for i := 1 to dfrubro do begin 
+				cantidad := retornoCantidadEntreRango(v[i], cod1, cod2);
+				vcp[i] := cantidad;
+			end;
+		end;
+		
+// programa principal
+
+var
+	v: vectorRubros;
+	rubr: rangorubro;
+	codprod, codprod2: integer;
+	respuesta: boolean;
+	vcm: vectorDeCodigoMayor;
+	vcp: vectorCantidadProductos;
+begin 
+	Randomize;
+	cargarEstructuraA(v);
+
+	writeln('Ingrese un número de rubro entre 1 y 10: ');
+	readln(rubr); 
+	writlen('Ingrese un código de producto: ');
+	readln(codprod);
+	respuesta := buscoSiExisteRubro(v, rubr, codprod);
+	
+	inicializarVectorDeCodigoMayor(vcm);
+	reciboYRetornoNuevoVector(v, vcm); // C
+	
+	writeln('Ingrese un código de producto, considerélo como el límite inferior de un rango: ');
+	readln(codprod);
+	writeln('Ingrese otro código de producto, considerélo como el límite superior de un rango: ');
+	readln(codprod2);
+	inicializarVectorCantidadProductos(vcp);
+	reciboYRetornoNuevoVectorProds(v, codprod, codprod2, vcp);
+end.
