@@ -89,6 +89,8 @@ type dym = record
 	end;
 	
 // módulos
+
+// INICIO A
 	procedure generardiaymes(var dm: dym);
 	begin 
 		dm.dia := random(31)+1;
@@ -188,7 +190,9 @@ type dym = record
 			leerprestamos(p);
 		end;
 	end;
-	
+// FIN A
+
+// INICIO B
 	function retornoISBNMaximo(a: arbol): integer;
 	begin
 		if (a = nil) then 
@@ -200,7 +204,9 @@ type dym = record
 				retornoISBNMaximo := a^.dato.isbn;
 		end;
 	end;
+// FIN B
 	
+// INICIO C
 	function retornoISBNMinimo(a2: arbol2): integer;
 	begin 
 		if (a2 = nil) then 
@@ -212,7 +218,9 @@ type dym = record
 				retornoISBNMinimo := a2^.dato.isbn;
 		end;
 	end;
+// FIN C
 
+// INICIO D
 	function retornoCantPrestArbol1(a: arbol; numsoc: integer): integer;
 	begin 
 		if (a = nil) then 
@@ -223,7 +231,9 @@ type dym = record
 			retornoCantPrestArbol1 := retornoCantPrestArbol1(a^.HI, numsoc) + retornoCantPrestArbol1(a^.HD, numsoc);
 		end;
 	end;
-	
+// FIN D	
+
+// INICIO E
 	function retornoCantPrestArbol2(a2: arbol2; numsoc: integer): integer;
 	
 		function cuentoPrestamosLista(l: lista; numsoc: integer): integer;
@@ -244,7 +254,9 @@ type dym = record
 		else
 			retornoCantPrestArbol2 := retornoCantPrestArbol2(a2^.HI, numsoc) + retornoCantPrestArbol2(a2^.HD, numsoc);
 	end;
+//FIN E
 
+// INICIO F
 	procedure agregarAdelante2(var l2: lista2; isbnn: integer);
 	var
 		nue: lista2;
@@ -267,7 +279,9 @@ type dym = record
 			nuevaEstructuraF(a^.HI, l2);
 		end;
 	end;
+// FIN F
 
+//INICIO G
 {g. Un módulo que reciba la estructura generada en ii. y retorne una nueva estructura
 ordenada ISBN, donde cada ISBN aparezca una vez junto a la cantidad total de veces
 que se prestó.}
@@ -300,34 +314,115 @@ que se prestó.}
 			
 			nuevaEstructuraG(a2^.HI, l3);
 		end;
+	end;
+// FIN G
+	
+// INICIO H
+	procedure reciboEImprimo(l3: lista2);
+	begin
+		while (l3 <> nil) do begin 
+			writeln('El isbn es: ', l3^.dato.isbn, ' y la cantidad total de veces que se prestó es: ', l3^.dato.cantidadtotalprestado);
+			l3 := l3^.sig;
+		end;
+	end;	
+// FIN H	
+
+// INICIO I
+{i. Un módulo recursivo que reciba la estructura generada en i. y dos valores de ISBN. El
+módulo debe retornar la cantidad total de préstamos realizados a los ISBN
+comprendidos entre los dos valores recibidos (incluidos).}
+	function retornoCantidadPrestEnRango(a: arbol; v1, v2: integer): integer;
+	begin
+		if (a = nil) then 
+			retornoCantidadPrestEnRango := 0
+		else begin
+			if (a^.dato.isbn >= v1) then begin 
+				if (a^.dato.isbn <= v2) then 
+					retornoCantidadPrestEnRango := 1 + retornoCantidadPrestEnRango(a^.HI, v1, v2) + retornoCantidadPrestEnRango(a^.HD, v2, v2)
+				else
+					retornoCantidadPrestEnRango := retornoCantidadPrestEnRango(a^.HI, v1, v2)
+			else
+				retornoCantidadPrestEnRango := retornoCantidadPrestEnRango(a^.HD, v1, v2);
+		end;
+	end; 
+// FIN I
+
+// INICIO J
+{j. Un módulo recursivo que reciba la estructura generada en ii. y dos valores de ISBN. El
+módulo debe retornar la cantidad total de préstamos realizados a los ISBN
+comprendidos entre los dos valores recibidos (incluidos)}
+
+
+
+	function retornoCantidadIncisoJ(a2: arbol2; v1, v2: integer): integer;
 		
+		function cuentoCantidadNodosPrest(l: lista): integer;
+		begin
+			if (a = nil) then 
+				cuentoCantidadNodosPrest := 0
+			else
+				cuentoCantidadNodosPrest := 1 + cuentoCantidadNodosPrest(l^.sig);
+		end;
+		
+	begin
+		if (a2 = nil) then 
+			retornoCantidadIncisoJ := 0
+		else begin
+			if (a2^.dato.isbn >= v1) then begin 
+				if (a2^.dato.isbn <= v2) then 
+					retornoCantidadIncisoJ := cuentoCantidadNodosPrest(a2^.dato.lista) + retornoCantidadIncisoJ(a^.HI, v1, v2) + retornoCantidadIncisoJ(a^.HD, v1, v2)
+				else
+					retornoCantidadIncisoJ := retornoCantidadIncisoJ(a^.HI, v1, v2);
+			end
+			else	
+				retornoCantidadIncisoJ := retornoCantidadIncisoJ(a^.HD, v1, v2);
+		end;
+	end;
+
+// FIN J
+
+/// PROGRAMA PRINCIPAL	
 var
 	a: arbol;
 	a2: arbol2;
-	numerosoc: integer;
+	numerosoc, valor1, valor2;: integer;
 	l2: lista2;
 
 begin
 	a := nil;
 	a2 := nil;
-	cargarArboles(a, a2);
+	cargarArboles(a, a2); // A
 	
-	writeln('El ISBN máximo del arbol 1 es: ', retornoISBNMaximo(a));
+	writeln('El ISBN máximo del arbol 1 es: ', retornoISBNMaximo(a)); // B
 	
-	writeln('El ISBN mínimo del arbol 2, es: ', retornoISBNMinimo(a2));
+	writeln('El ISBN mínimo del arbol 2, es: ', retornoISBNMinimo(a2)); // C
 	
 	writeln('Lea un número de socio para retonar la cantidad de préstamos realizados por el mismo del arbol 1: ');
 	readln(numerosoc);
-	writeln('La cantidad de préstamos del arbol 2 del número de socio: ', numerosoc, ' es: ', retornoCantPrestArbol1(a, numerosoc));
+	writeln('La cantidad de préstamos del arbol 2 del número de socio: ', numerosoc, ' es: ', retornoCantPrestArbol1(a, numerosoc)); // D
 	
 	writeln('Lea un número de socio para retonar la cantidad de préstamos realizados por el mismo del arbol 2: ');
 	readln(numerosoc);
-	writeln('La cantidad de préstamos del arbol 2 del número de socio: ', numerosoc, ' es: ', retornoCantPrestArbol2(a2, numerosoc));
+	writeln('La cantidad de préstamos del arbol 2 del número de socio: ', numerosoc, ' es: ', retornoCantPrestArbol2(a2, numerosoc)); // E
 	
  	l2 := nil;
-	nuevaEstructuraF(a, l2);
+	nuevaEstructuraF(a, l2); // F
 	
 	l3 := nil;
-	nuevaEstructuraG(a2, l3);
+	nuevaEstructuraG(a2, l3); // G
+
+	reciboEImprimo(l3); // H
 	
+	writeln('Ingrese un valor como límite inferior: ');
+	readln(valor1);
+	writeln('Ingrese un valor como límite superior: ');
+	readln(valor2);
+	retornoCantidadPrestEnRango(a, valor1, valor2); // I
+	
+	writeln('Ingrese otro valor como límite inferior: ');
+	readln(valor1);
+	writeln('Ingrese otro valor como límite superior: ');
+	readln(valor2);
+	retornoCantidadIncisoJ(a2, valor1, valor2); // J
 end.
+
