@@ -32,12 +32,9 @@ comprendidos entre los dos valores recibidos (incluidos).}
 
 	
 program ejercicio4;
-const 
-	corte = 0;
+const corte = 0;
 
-type
-	
-	dym = record
+type dym = record
 		dia: integer;
 		mes: integer;
 	end;
@@ -219,10 +216,10 @@ type
 	function retornoCantPrestArbol1(a: arbol; numsoc: integer): integer;
 	begin 
 		if (a = nil) then 
-			retornoCantPrest := 0
+			retornoCantPrestArbol1 := 0
 		else begin
 			if (a^.dato.numerosocio = numsoc) then 
-				retornoCantPrestArbol1 := 1 + retornoCantPrestArbol1(a^.HI, numsoc) + retornoCantPrestArbol1(a^.HD, numsoc)
+				retornoCantPrestArbol1 := 1 + retornoCantPrestArbol1(a^.HI, numsoc) + retornoCantPrestArbol1(a^.HD, numsoc);
 			retornoCantPrestArbol1 := retornoCantPrestArbol1(a^.HI, numsoc) + retornoCantPrestArbol1(a^.HD, numsoc);
 		end;
 	end;
@@ -235,9 +232,9 @@ type
 				cuentoPrestamosLista := 0
 			else begin
 				if (l^.dato.numerosocio = numsoc) then 
-					cuentroPrestamoLista := 1 + cuentoPrestamosLista(l^.sig, numsoc)
+					cuentoPrestamoSLista := 1 + cuentoPrestamosLista(l^.sig, numsoc)
 				else
-					cuentroPrestamoLista := cuentroPrestamoLista(l^.sig, numsoc);
+					cuentoPrestamosLista := cuentoPrestamosLista(l^.sig, numsoc);
 			end;
 		end;
 		
@@ -245,14 +242,30 @@ type
 		if (a2 = nil) then 
 			retornoCantPrestArbol2 := 0
 		else
-			retornoCantPrestArbol2 := retornoCantPrestArbol2(a2^.HI, numsoc) + retornoCantPrestArbol2(a^.HD, numsoc);
-	end;
-	
+			retornoCantPrestArbol2 := retornoCantPrestArbol2(a2^.HI, numsoc) + retornoCantPrestArbol2(a2^.HD, numsoc);
 	end;
 
-	procedure nuevaEstructura(a: arbol; var l2: lista2);
+	procedure agregarAdelante2(var l2: lista2; isbnn: integer);
+	var
+		nue: lista2;
 	begin
-		
+		new(nue);
+		nue^.dato.isbn := isbnn;
+		nue^.dato.cantidadtotalprestado := 1;
+		nue^.sig := l2;
+		l2 := nue;
+	end;
+
+	procedure nuevaEstructuraF(a: arbol; var l2: lista2);
+	begin
+		if (a <> nil) then begin 	
+			nuevaEstructuraF(a^.HD, l2);
+			if (l2 <> nil) and (a^.dato.isbn = l2^.dato.isbn) then 
+					l2^.dato.cantidadtotalprestado := l2^.dato.cantidadtotalprestado + 1
+			else
+				agregarAdelante2(l2, a^.dato.isbn);
+			nuevaEstructuraF(a^.HI, l2);
+		end;
 	end;
 
 var
@@ -277,7 +290,7 @@ begin
 	readln(numerosoc);
 	writeln('La cantidad de préstamos del arbol 2 del número de socio: ', numerosoc, ' es: ', retornoCantPrestArbol2(a2, numerosoc));
 	
-	l2 := nil;
-	nuevaEstructura(a, l2);
+ 	l2 := nil;
+	nuevaEstructuraF(a, l2);
 end.
-	
+
