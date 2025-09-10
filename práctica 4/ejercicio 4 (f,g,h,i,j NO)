@@ -268,11 +268,45 @@ type dym = record
 		end;
 	end;
 
+{g. Un módulo que reciba la estructura generada en ii. y retorne una nueva estructura
+ordenada ISBN, donde cada ISBN aparezca una vez junto a la cantidad total de veces
+que se prestó.}
+
+	function devuelvoCantNodos(l: lista): integer;
+	begin
+		if (l <> nil) then 
+			devuelvoCantNodos := 1 + devuelvoCantNodos(l^.sig)
+		else
+			devuelvoCantNodos := 0;
+	end;
+
+	procedure agregarAdelante3(isbnn: integer; l: lista; var l3: lista2);
+	var
+		nue: lista2;
+	begin
+		new(nue); 
+		nue^.dato.isbn := isbnn;
+		nue^.dato.cantidadtotalprestado := devuelvoCantNodos(l);
+		nue^.sig := l3;
+		l3 := nue;
+	end;
+	
+	
+	procedure nuevaEstructuraG(a2: arbol2; var l3: lista2)
+	begin 
+		if (a2 <> nil) then begin
+			nuevaEstructuraG(a2^.HD, l3);
+			agregarAdelante3(a2^.dato.isbn, a2^.dato.lista, l3);
+			
+			nuevaEstructuraG(a2^.HI, l3);
+		end;
+		
 var
 	a: arbol;
 	a2: arbol2;
 	numerosoc: integer;
 	l2: lista2;
+
 begin
 	a := nil;
 	a2 := nil;
@@ -292,5 +326,8 @@ begin
 	
  	l2 := nil;
 	nuevaEstructuraF(a, l2);
+	
+	l3 := nil;
+	nuevaEstructuraG(a2, l3);
+	
 end.
-
