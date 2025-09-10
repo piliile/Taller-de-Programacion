@@ -1,0 +1,249 @@
+{4. Una oficina requiere el procesamiento de los reclamos de las personas. De cada reclamo
+se ingresa código, DNI de la persona, año y tipo de reclamo. El ingreso finaliza con el
+código de igual a 0. Se pide:
+a) Un módulo que retorne estructura adecuada para la búsqueda por DNI. Para cada DNI
+se deben tener almacenados cada reclamo y la cantidad total de reclamos que realizó.
+b) Un módulo que reciba la estructura generada en a) y un DNI y retorne la cantidad de
+reclamos efectuados por ese DNI.
+c) Un módulo que reciba la estructura generada en a) y dos DNI y retorne la cantidad de
+reclamos efectuados por todos los DNI comprendidos entre los dos DNI recibidos.
+d) Un módulo que reciba la estructura generada en a) y un año y retorne los códigos de
+los reclamos realizados en el año recibido.}
+
+
+program ejercicio4;
+const
+	corte = 0;
+
+type
+	reclamo = record
+		codigo: integer;
+		dni: integer;
+		anio: integer;
+		tiporeclamo: string;
+	end;
+	
+	reclamosindni = record
+		codigo: integer;
+		anio: integer;
+		tiporeclamo: string;
+	end;
+	listaReclamos = ^nodo;
+	nodo = record
+		dato: reclamosindni;
+		sig: listaReclamos;
+	end;
+	
+	datosArbol = record
+		dni: integer;
+		lista: listaReclamos;
+		cantidadTotalReclamos: integer;
+	end;
+	
+	arbol = ^nodo2;
+	nodo2 = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+
+	listaCodigos = ^nodo3;
+	nodo3 = record
+		dato: integer;
+		sig: listaReclamos;
+	end;
+
+
+// MÓDULOS
+
+// INICIO INCISO A
+	procedure informacionReclamo(var re: reclamo);
+	begin
+		writeln('Ingrese el dni de la persona que hizo el reclamo: ');
+		readln(re.dni);
+		if (re.dni <> corte) then begin 	
+			writeln('Ingrese el codigo del reclamo: ');
+			readln(re.codigo);
+			writeln('Ingrese el año del reclamo: ');
+			readln(re.anio);
+			writeln('Ingrese el tipo de reclamo: ');
+			readln(re.tiporeclamo);
+		end;
+	end;
+
+	procedure cargarDatosReclamosSinDni(var resd: reclamosindni; re: reclamo);
+	begin 
+		resd.codigo := re.codigo;
+		resd.anio := re.anio;
+		resd.tiporeclamo := re.tiporeclamo;
+	end;
+
+	procedure agregarAdelante(var l: listaReclamos; resd: reclamosindni);
+	var
+		nue: listaReclamos;
+	begin 
+		new(nue);
+		nue^.dato := resd;
+		nue^.sig := l;
+		l := nue;
+	end;
+
+	procedure agregar(var a: arbol; re: reclamo);
+	var
+		resd: reclamosindni;
+	begin 
+		if (a = nil) then begin
+			new(a);
+			a^.dato.dni := re.dni;
+			a^.dato.lista := nil;
+			a^.dato.cantidadTotalReclamos := 1;
+			cargarDatosReclamosSinDni(resd, re);
+			agregarAdelante(a^.dato.lista, resd);
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin 
+			if (a^.dato.dni = re.dni) then begin 
+				cargarDatosReclamosSinDni(resd, re);
+				agregarAdelante(a^.dato.lista, resd);
+				a^.dato.cantidadTotalReclamos := a^.dato.cantidadTotalReclamos + 1;
+			end
+			else begin
+				if (a^.dato.dni > re.dni) then 
+					agregar(a^.HI, re)
+				else
+					agregar(a^.HD, re);
+			end;
+		end;
+	end;
+
+
+	procedure cargarEstructuraA(var a: arbol);
+	var
+		re: reclamo;
+	begin 
+		informacionReclamo(re);
+		while (re.dni <> corte) do begin
+			agregar(a, re);
+			informacionReclamo(re);
+		end;
+	end;
+// FIN INCISO A
+
+
+// INICIO INCISO B
+//b) Un módulo que reciba la estructura generada en a) y un DNI y retorne la cantidad de reclamos efectuados por ese DNI.	
+	function cantidadReclamosPorDniPerso(a: arbol; dp: integer): integer;	
+	begin 
+		if (a = nil) then 
+			cantidadReclamosPorDniPerso := 0
+		else begin
+			if (a^.dato.dni = dp) then 
+				cantidadReclamosPorDniPerso := a^.dato.cantidadTotalReclamos
+			else begin
+				if (a^.dato.dni > dp) then 
+					cantidadReclamosPorDniPerso := cantidadReclamosPorDniPerso(a^.HI, dp)
+				else
+					cantidadReclamosPorDniPerso := cantidadReclamosPorDniPerso(a^.HD, dp);
+			end;
+		end;
+	end;
+// FIN INCISO B
+
+// INICIO INCISO C
+// c) Un módulo que reciba la estructura generada en a) y dos DNI y retorne la cantidad de reclamos efectuados por todos los DNI comprendidos entre los dos DNI recibidos.
+	function cantidadReclamosEntreDnis(a: arbol; dp1, dp2: integer): integer;
+	begin 
+		if (a = nil) then 
+			cantidadReclamosEntreDnis := 0
+		else begin
+			if (a^.dato.dni >= dp1) and (a^.dato.dni <= dp2) then 
+				cantidadReclamosEntreDnis := a^.dato.cantidadTotalReclamos + cantidadReclamosEntreDnis(a^.HI, dp1, dp2) + cantidadReclamosEntreDnis(a^.HD, dp1, dp2)
+			else begin 
+				if (a^.dato.dni < dp1) then 
+					cantidadReclamosEntreDnis := cantidadReclamosEntreDnis(a^.HD, dp1, dp2)
+				else
+					cantidadReclamosEntreDnis := cantidadReclamosEntreDnis(a^.HI, dp1, dp2)
+			end;
+		end;
+	end;
+// FIN INCISO C
+
+// INICIO INCISO D
+// d) Un módulo que reciba la estructura generada en a) y un año y retorne los códigos de los reclamos realizados en el año recibido.
+	
+	{procedure moduloD(a: arbol; an: integer; var l: listaCodigos);
+		
+		
+	var
+		aux: listaReclamos;
+	begin
+		if (a <> nil) then begin
+			aux := a^.dato.lista;
+			while (aux <> nil) do begin
+				if (aux^.anio = an) then 
+					agregarAdelante2(l, a^.dato.lista^.codigo);
+				aux := aux^.sig;
+			end;
+			moduloD(a^.HI, an, l);
+			moduloD(a^.HD, an, l);
+		end;
+	end;}
+	procedure agregarAdelante2(var l: listaCodigos; c: integer);
+	var
+		nue: listaCodigos;
+	begin
+		new(nue);
+		nue^.dato := c;
+		nue^.sig := l;
+		l := nue;
+	end;
+		
+	procedure moduloD(a: arbol; an: integer; var lC: listaCodigos);
+		
+		procedure agregarCodigosPorAnio(l: listaReclamos; an: integer; lC: listaCodigos);
+		begin 
+			if (l <> nil) then begin
+				if (l^.dato.anio = an) then 
+					agregarAdelante2(lC, l^.dato.codigo)
+				agregarCodigosPorAnio(l^.sig, an, lC);
+			end;
+		end;
+	
+	begin 	
+		if (a <> nil) then begin
+			agregarCodigosPorAnio(a^.dato.lista, an, lC);
+			moduloD(a^.HI, an, lC);
+			moduloD(a^.HD, an, lC);
+		end;
+	end;
+// FIN INCISO D
+
+// PROGRAMA PRINCIPAL
+var
+	a: arbol;
+	dniperso, cant, dniperso2, cant2, anioo: integer;
+	l: listaCodigos;
+begin
+	a := nil;
+	cargarEstructuraA(a); // A
+	
+	writeln('Ingrese el dni de una persona para retonar la cantidad de reclamos efectuados por dicho dni: ');
+	readln(dniperso);
+	cant := cantidadReclamosPorDniPerso(a, dniperso); // B
+	
+	writeln('Vuelva a ingresar un dni, considerelo como el limite inferior de un rango: ');
+	readln(dniperso);
+	writeln('Ingrese otro dni, que sea el límite superior del rango: ');
+	readln(dniperso2);
+	cant2 := cantidadReclamosEntreDnis(a, dniperso, dniperso2); // C
+	
+	
+	writeln('Lea un año para retornar los códigos de los reclamos realizados en el año recibido: ');
+	readln(anioo);
+	l := nil;
+	moduloD(a, anio, l); // D
+	
+	
+end.
+
