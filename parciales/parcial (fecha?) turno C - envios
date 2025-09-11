@@ -1,0 +1,190 @@
+{El correo argentino necesita procesar los envios entregadores durante el mes de juio de 2024.
+De cada envio se conoce, el codigo de cliente, el dia, el codigo postal y el peso del paquete.
+A. Implementar un modulo que lea envios, genere y retorne un arbol ordenado por codigo postal, donde para cada codigo postal
+se almacena en una lista todos los envios (codigo de cliente, dia y peso del paquete) correspondientes.
+La lectura finaliza con el codigo de cliente 0. 
+B. Implementar un modulo que reciba a estructura que se generó en A y un codigo postal, y retorne todos los envios de dicho codigo postal.
+C. Realizar un  modulo recursivo que reciba la estructura que retorna el inciso B y retorne los dos codigos de cliente correspondientes
+al envio con menor y mayor peso.
+}
+
+program parcialTurnoC;
+const
+	corte = 0;
+	dfDia = 30;
+
+type
+	rangoDia = 1..dfDia;
+	
+	envio = record // si no utilizamos el codigo postal en este registro, es innecesario hacer otro con los mismos datos menos el codigo postal, x eso lo usamos en codigoYLista.
+		codigocliente: integer;
+		dia: rangoDia;
+		peso: real;
+	end;
+
+	
+	listaEnvios = ^nodo;
+	nodo = record
+		dato: envio;
+		sig: listaEnvios;
+	end;
+	
+	codigoYLista = record
+		codigopostal: integer;
+		lista: listaEnvios;
+	end;
+	
+	arbol = ^nodo2;
+	nodo2 = record
+		dato: codigoYLista;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	listaEnviosCodigoPostal = ^nodo3;
+	nodo3 = record
+		dato: envio;
+		sig: listaEnviosCodigoPostal;
+	end;
+	
+// INICIO INCISO A
+	procedure leerEnvio(var e: envio);
+	begin
+		e.codigocliente := random(200);
+		writeln('El codigo de cliente del envio es: ', e.codigocliente);
+		if (e.codigocliente <> corte) then begin
+			e.dia := random(30) + 1;
+			writeln('El dia del envio es: ', e.dia);
+			e.peso := random(100) + 1;
+			writeln('El peso del paquete del envio es: ', e.peso);
+		end;
+	end;
+
+	procedure agregarAdelante(var l: listaEnvios; e: envio);
+	var
+		nue: listaEnvios;
+	begin 
+		new(nue);
+		nue^.dato := e;
+		nue^.sig := l;
+		l := nue;
+	end;
+
+	procedure agregar(var a: arbol; e: envio; cp: integer);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato.codigopostal := cp;
+			a^.dato.lista := nil;
+			agregarAdelante(a^.dato.lista, e);
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.codigopostal = cp) then 
+				agregarAdelante(a^.dato.lista, e)
+			else begin
+				if (a^.dato.codigopostal > cp) then 
+					agregar(a^.HI, e, cp)
+				else
+					agregar(a^.HD, e, cp);
+			end;
+		end;
+	end;
+
+	procedure cargarArbol(var a: arbol);
+	var
+		e: envio;
+		codpostal: integer;
+	begin
+		codpostal := random(2000) + 1;
+		writeln('El codigo postal del envio es: ', codpostal);
+		leerEnvio(e);
+		while (e.codigocliente <> corte) do begin 
+			agregar(a, e, codpostal);
+			codpostal := random(2000) + 1;
+			writeln('El codigo postal del envio es: ', codpostal);
+			leerEnvio(e);
+		end;
+	end;
+// FIN INCISO A
+
+// INICIO INCISO B
+
+	procedure retornoEstructuraNueva(a: arbol; var l2: listaEnviosCodigoPostal; cp: integer);
+		
+		procedure agregarAdelante2(l: listaEnvios; var l2: listaEnviosCodigoPostal);
+		var
+			nue: listaEnviosCodigoPostal;
+		begin
+			new(nue);
+			nue^.dato := l^.dato;
+			nue^.sig := l2;
+			l2 := nue;
+		end;
+			
+		procedure cargoLista2(l: listaEnvios; var l2: listaEnviosCodigoPostal);
+		begin
+			while (l <> nil) do begin
+				agregarAdelante2(l, l2);
+				l := l^.sig;
+			end;
+		end;
+			
+	begin
+		if (a <> nil) then begin
+			if (a^.dato.codigopostal = cp) then 
+				cargoLista2(a^.dato.lista, l2)
+			else begin 
+				if (a^.dato.codigopostal > cp) then 
+					retornoEstructuraNueva(a^.HI, l2, cp)
+				else
+					retornoEstructuraNueva(a^.HD, l2, cp);
+			end;
+		end
+		else
+			l2 := nil;
+	end;
+// FIN INCISO B
+
+// INICIO INCISO C
+	procedure retornoMaxYMin(l2: listaEnviosCodigoPostal; var maximocc, minimocc: integer; var pesomax, pesomin: real);
+	begin 
+		if (l2 <> nil) then begin 
+			if (l2^.dato.peso > pesomax) then begin
+				pesomax := l2^.dato.peso;	
+				maximocc := l2^.dato.codigocliente;
+			end;
+			if (l2^.dato.peso < pesomin) then begin
+				pesomin := l2^.dato.peso;
+				minimocc := l2^.dato.codigocliente
+			end;
+			retornoMaxYMin(l2^.sig, maximocc, minimocc, pesomax, pesomin);
+		end;
+	end;
+
+// FIN INCISO C
+
+// PROGRAMA PRINCIPAL
+
+var
+	a: arbol;
+	l2: listaEnviosCodigoPostal;
+	codpostal, maximocodigocliente, minimocodigocliente: integer;
+	minpeso, maxpeso: real;
+begin 
+	Randomize; 
+	a := nil;
+	cargarArbol(a); // A
+	
+	writeln('Ingrese un codigo postal para retornar una estructura con los envios de ese codigo. ');
+	readln(codpostal);
+	l2 := nil;
+	retornoEstructuraNueva(a, l2, codpostal); // B
+	
+	maximocodigocliente := 0;
+	minimocodigocliente := 0;
+	minpeso := 9999;
+	maxpeso := -1;
+	retornoMaxYMin(l2, maximocodigocliente, minimocodigocliente, maxpeso, minpeso);
+end.
