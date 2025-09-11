@@ -79,18 +79,17 @@ type
 			end;
 		end;
 	end;
-	
-	procedure cargarEstructuras(var a: arbol; var v: vectorCategorias);
-		
-		procedure inicializarVectorCategorias(var v: vectorCategorias);
-		var
-			i: rangoCategoria;
-		begin 
-			for i := 1 to dfCategoria do begin 
-				v[i].categoria := '';
-				v[i].cantidadCompras := 0;
-			end;
+	procedure inicializarVectorCategorias(var v: vectorCategorias);
+	var
+		i: rangoCategoria;
+	begin 
+		for i := 1 to dfCategoria do begin 
+			v[i].categoria := '';
+			v[i].cantidadCompras := 0;
 		end;
+	end;
+		
+	procedure cargarEstructuras(var a: arbol; var v: vectorCategorias);
 		
 		procedure cargarVector(var v: vectorCategorias; cat: rangoCategoria);
 		var
@@ -103,7 +102,6 @@ type
 		c: compra; 
 	begin
 		leerCompra(c);
-		inicializarVectorCategorias(v);
 		while (c.codigoCliente <> corte) do begin
 			agregar(a, c.codigoComida);
 			cargarVector(v, c.categoria);
@@ -148,21 +146,21 @@ type
 // FIN B
 
 // INICIO C
-	procedure ordenarVector(v: vectorCategorias; var mC: string);
+	procedure ordenarVector(var v: vectorCategorias; var mC: string);
 	var
 		i, j, pos: rangoCategoria;
 		item: datosVector;
 	begin
-		for i := 1 to 4 do begin 
+		for i := 1 to (dfCategoria - 1) do begin 
 			pos := i;
-			for j := (i + 1) to 5 do 
+			for j := (i + 1) to dfCategoria do 
 				if (v[j].cantidadCompras < v[pos].cantidadCompras) then 
 					pos := j;
 			item := v[pos];
 			v[pos] := v[i];
 			v[i] := item;
 		end;
-		mC := v[5].categoria;
+		mC := v[dfCategoria].categoria;
 	end;
 
 
@@ -176,6 +174,7 @@ var
 begin
 	Randomize;
 	a := nil;
+	inicializarVectorCategorias(v);
 	cargarEstructuras(a, v); // A
 	
 	writeln('El arbol impreso quedaría de la siguiente manera: ');
@@ -191,4 +190,6 @@ begin
 	mayorCategoria := '';
 	ordenarVector(v, mayorCategoria); // C
 	writeln('La mayor cantidad de compras fue de la categoria: ', mayorCategoria); // NO PIDE C.
+	writeln('El vector ordenado quedaría de la siguiente manera: ');
+	imprimoVector(v); // NO PIDE C. 
 end.
