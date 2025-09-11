@@ -1,0 +1,193 @@
+{Una empresa de  gastronompia desea procesar las compras de comida realizadas a sus clientes durante 2022.
+A. Implementar un módulo que lea las compras de comidas. De cada compra se lee codigo de comida, 
+codigo de cliente y categoría ('full...). La lectura finaliza con el codigo de cliente 0. 
+Se deben retornar dos estrcturas de datos:
+I. Un abb ordenado por codigo de comida. Para cada codigo de comida debe almacenarse la cantidad de compras realizadas
+a ese codigo entre todos los clientes.
+II. Un vector que almacene en cada posicion el nombre de la categoria y la cantidad de entregas realizadas para 
+esa categoria.
+B. Implementar un modulo que reciba el arbol de A y un codigo de comida. El modulo debe retornar la cantidad de compras 
+realizadas al codigo de comida ingresado.
+}
+program parcialTurnoP;
+const 
+	corte = 0;
+	dfCategoria = 5;
+
+type
+	rangoCategoria = 1..dfCategoria;
+	
+	compra = record
+		codigoComida: integer;
+		codigoCliente: integer;
+		categoria: rangoCategoria;
+	end;
+	
+	datosArbol = record
+		codigoComida: integer;
+		cantidadCompras: integer;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	datosVector = record
+		categoria: string;
+		cantidadCompras: integer;
+	end;
+	
+	vectorCategorias = array [rangoCategoria] of datosVector;
+	
+	
+// MÓDULOS
+
+// INICIO A
+	procedure leerCompra(var c: compra);
+	begin
+		c.codigoCliente := random(200);
+		writeln('El codigo de cliente es: ', c.codigoCliente);
+		if (c.codigoCliente <> corte) then begin 
+			c.categoria := random(5) + 1;
+			writeln('La categoria es: ', c.categoria);
+			c.codigoComida := random(200) + 1000; 
+		end;	
+	end;
+
+
+	procedure agregar(var a: arbol; codCom: integer);
+	begin
+		if (a = nil) then begin
+			new(a);
+			a^.dato.codigoComida := codCom;
+			a^.dato.cantidadCompras := 1;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.codigoComida = codCom) then 
+				a^.dato.cantidadCompras := a^.dato.cantidadCompras + 1
+			else begin
+				if (a^.dato.codigoComida > codCom) then 
+					agregar(a^.HI, codCom)
+				else
+					agregar(a^.HD, codCom);
+			end;
+		end;
+	end;
+	
+	procedure cargarEstructuras(var a: arbol; var v: vectorCategorias);
+		
+		procedure inicializarVectorCategorias(var v: vectorCategorias);
+		var
+			i: rangoCategoria;
+		begin 
+			for i := 1 to dfCategoria do begin 
+				v[i].categoria := '';
+				v[i].cantidadCompras := 0;
+			end;
+		end;
+		
+		procedure cargarVector(var v: vectorCategorias; cat: rangoCategoria);
+		var
+			vN: array [rangoCategoria] of string = ('Full', 'Super', 'Media', 'Normal', 'Basica');
+		begin
+			v[cat].categoria := vN[cat];
+			v[cat].cantidadCompras := v[cat].cantidadCompras + 1;
+		end;
+	var
+		c: compra; 
+	begin
+		leerCompra(c);
+		inicializarVectorCategorias(v);
+		while (c.codigoCliente <> corte) do begin
+			agregar(a, c.codigoComida);
+			cargarVector(v, c.categoria);
+			leerCompra(c);
+		end;
+	end;
+// FIN A
+
+// NO PIDE A: 
+	procedure imprimoArbol(a: arbol);
+	begin
+		if (a <> nil) then begin
+			imprimoArbol(a^.HI);
+			writeln('El codigo de comida es: ', a^.dato.codigoComida, ' y la cantidad de compras fue de: ', a^.dato.cantidadCompras);
+			imprimoArbol(a^.HD);
+		end;
+	end;
+	procedure imprimoVector(v: vectorCategorias);
+	var
+		i: rangoCategoria;
+	begin
+		for i := 1 to dfCategoria do 
+			writeln('La categoría ', i, ', correspondiente al nombre ', v[i].categoria, ', tuvo una cantidad de compras de: ', v[i].cantidadCompras);
+	end;
+	
+// INICIO B
+	function retornoCantComCodigo(a: arbol; cc: integer): integer;
+	begin
+		if (a = nil) then 	
+			retornoCantComCodigo := 0
+		else begin
+			if (a^.dato.codigoComida = cc) then 
+				retornoCantComCodigo := a^.dato.cantidadCompras
+			else begin
+				if (a^.dato.codigoComida > cc) then 
+					retornoCantComCodigo := retornoCantComCodigo(a^.HI, cc)
+				else
+					retornoCantComCodigo := retornoCantComCodigo(a^.HD, cc);
+			end;
+		end;
+	end;
+// FIN B
+
+// INICIO C
+	procedure ordenarVector(v: vectorCategorias; var mC: string);
+	var
+		i, j, pos: rangoCategoria;
+		item: datosVector;
+	begin
+		for i := 1 to 4 do begin 
+			pos := i;
+			for j := (i + 1) to 5 do 
+				if (v[j].cantidadCompras < v[pos].cantidadCompras) then 
+					pos := j;
+			item := v[pos];
+			v[pos] := v[i];
+			v[i] := item;
+		end;
+		mC := v[5].categoria;
+	end;
+
+
+// FIN C	
+// PROGRAMA PRINCIPAL
+var
+	a: arbol;
+	v: vectorCategorias;
+	codcom, cantidadCom: integer;
+	mayorCategoria: string;
+begin
+	Randomize;
+	a := nil;
+	cargarEstructuras(a, v); // A
+	
+	writeln('El arbol impreso quedaría de la siguiente manera: ');
+	imprimoArbol(a); // NO PIDE A.
+	writeln('El vector impreso quedaría de la siguiente manera: ');
+	imprimoVector(v); // NO PIDE A.
+	
+	writeln('Ingrese un codigo de comida para retonar la cantidad de compras de dicho codigo: ');
+	readln(codcom);
+	cantidadCom := retornoCantComCodigo(a, codcom); // B
+	writeln('El codigo de comida ingresado tuvo una cantidad de compras de: ', cantidadCom); // NO PIDE B.
+	
+	mayorCategoria := '';
+	ordenarVector(v, mayorCategoria); // C
+	writeln('La mayor cantidad de compras fue de la categoria: ', mayorCategoria); // NO PIDE C.
+end.
