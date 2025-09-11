@@ -1,0 +1,248 @@
+{Aerolineas argentinas necesita procesar los pasajes vendidos durante 2023. De cada pasaje se conoce el codigo de vuelo, 
+el codigo de cliente, el codigo de ciudad destino y el monto. 
+A. Implementar un modulo que lea pasajes, genere y retorne una estructura adecuada para la busqueda por codigo
+de ciudad destino, donde para codigo de ciudad destino se almacenan juntos todos los pasajes (codigo de vuelo,
+codigo de cliente y monto). La lectura finaliza con el monto 0.
+B. Implementar un modulo que reciba la estructurada generada en A y un codigo de ciudad destino y retorne todos los pasajes hacia esa ciudad destino.
+C. Realizar un modulo que reciba la estructura generada en A y retorne el codigo de ciudad de destino con mayor cantidad de pasajes 
+vendidos.}
+
+program parcialTurnoDTema2;
+const
+	corte = 0;
+	
+type
+	pasaje = record
+		codigoVuelo: integer;
+		codigoCliente: integer;
+		codigoCiudadDestino: integer;
+		monto: real;
+	end;
+	
+	datosLista = record
+		codigoVuelo: integer;
+		codigoCliente: integer;
+		monto: real;
+	end;
+	
+	listaPasajes = ^nodo;
+	nodo = record
+		dato: datosLista;
+		sig: listaPasajes;
+	end;
+	
+	datosArbol = record
+		codigoCiudadDestino: integer;
+		lista: listaPasajes;
+	end; 
+	
+	arbol = ^nodo2;
+	nodo2 = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+
+	
+
+// INICIO A	
+	procedure leerPasaje(var p: pasaje);
+	begin
+		p.monto := random(50); // para q no tarde tanto en cortar
+		writeln('El monto es: ', p.monto:0:2);
+		if (p.monto <> corte) then begin 
+			p.codigoVuelo := random(700);
+			writeln('El codigo de vuelo es: ', p.codigoVuelo);
+			p.codigoCliente := random(100) + 1;
+			writeln('El codigo de cliente es: ', p.codigoCliente);
+			p.codigoCiudadDestino := random(50) + 1;
+			writeln('El codigo de ciudad destino es: ', p.codigoCiudadDestino);
+			writeln('/////////////////////////////////////////////////////');
+		end;
+	end;
+	
+	procedure cargarDatosLista(var p2: datosLista; p: pasaje);
+	begin
+		p2.codigoVuelo := p.codigoVuelo;
+		p2.codigoCliente := p.codigoCliente;
+		p2.monto := p.monto;
+	end;	
+
+	procedure agregarAdelante(var l: listaPasajes; p2: datosLista);
+	var
+		nue: listaPasajes;
+	begin
+		new(nue);
+		nue^.dato := p2;
+		nue^.sig := l;
+		l := nue;
+	end;
+	
+	procedure agregar(var a: arbol; p2: datosLista; codciudest: integer);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato.codigoCiudadDestino := codciudest;
+			a^.dato.lista := nil;	
+			agregarAdelante(a^.dato.lista, p2);
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin 
+			if (a^.dato.codigoCiudadDestino = codciudest) then 
+				agregarAdelante(a^.dato.lista, p2)
+			else begin
+				if (a^.dato.codigoCiudadDestino > codciudest) then 
+					agregar(a^.HI, p2, codciudest)
+				else
+					agregar(a^.HD, p2, codciudest);
+			end;
+		end;
+	end;
+		
+	procedure cargarArbol(var a: arbol);	
+	var
+		p: pasaje;
+		p2: datosLista;
+	begin
+		leerPasaje(p);
+		while (p.monto <> corte) do begin 
+			cargarDatosLista(p2, p);
+			agregar(a, p2, p.codigoCiudadDestino);
+			leerPasaje(p);
+		end;
+	end;		
+// FIN A
+
+// NO PIDE A
+	procedure imprimirArbol(a: arbol);
+		procedure imprimoLista(l: listaPasajes);
+		begin
+			while (l <> nil) do begin 
+				writeln('El codigo de vuelo es: ', l^.dato.codigoVuelo);
+				writeln('El codigo de cliente es: ', l^.dato.codigoCliente);
+				writeln('El monto es: ', l^.dato.monto:0:2);
+				writeln('/////////////////////////////////////////////////////');
+				l := l^.sig;
+			end;
+		end;
+	begin
+		if (a <> nil) then begin 
+			imprimirArbol(a^.HI);
+			writeln('La lista con el codigo de ciudad destino: ', a^.dato.codigoCiudadDestino, ' quedaria de la siguiente forma: ');
+			imprimoLista(a^.dato.lista);
+			imprimirArbol(a^.HD);
+		end;
+	end;
+
+// INICIO B
+	procedure retornoListaCodCiud(a: arbol; ccd: integer ;var ld: listaPasajes);
+		procedure agregarAdelante2(var ld: listaPasajes; l: listaPasajes);
+		var
+			nue: listaPasajes;
+		begin
+			new(nue);
+			nue^.dato := l^.dato;
+			nue^.sig := ld;
+			ld := nue;
+		end;
+		procedure recorroYCargoLista2(var ld: listaPasajes; l: listaPasajes);
+		begin
+			while (l <> nil) do begin 
+				agregarAdelante2(ld, l);
+				l := l^.sig;
+			end;
+		end;
+	begin
+		if (a = nil) then 
+			ld := nil
+		else begin
+			if (a^.dato.codigoCiudadDestino = ccd) then 
+				recorroYCargoLista2(ld, a^.dato.lista)
+			else begin
+				if (a^.dato.codigoCiudadDestino > ccd) then 
+					retornoListaCodCiud(a^.HI, ccd, ld)
+				else
+					retornoListaCodCiud(a^.HD, ccd, ld);
+			end;
+		end;
+	end;
+
+// FIN B
+ 
+// NO LO PIDE B 
+	procedure imprimirLista(ld: listaPasajes);
+	begin
+		while(ld <> nil)do begin 
+			writeln('El codigo de vuelo es: ', ld^.dato.codigoVuelo);
+			writeln('El codigo de cliente es: ', ld^.dato.codigoCliente);
+			writeln('El monto es: ', ld^.dato.monto:0:2);
+			writeln('////////////////////////////////');
+			ld := ld^.sig;
+		end;
+	end;
+
+// INICIO C
+	function retornoCodMasPasajes(a: arbol): integer;
+		
+		procedure recorroArbol(a: arbol; var maxCant, maxCod: integer);
+			
+			function recorroLista(l: listaPasajes): integer;
+			var
+				cant: integer;
+			begin
+				cant := 0;
+				while (l <> nil) do begin 
+					cant := cant + 1;
+					l := l^.sig;
+				end;
+				recorroLista := cant;
+			end;
+			
+		var
+			cantNodos: integer;
+		begin
+			if (a <> nil) then begin 
+				cantNodos := recorroLista(a^.dato.lista);
+				if (cantNodos > maxCant) then begin
+					maxCant := cantNodos;
+					maxCod := a^.dato.codigoCiudadDestino;
+				end;
+				recorroArbol(a^.HI, maxCant, maxCod);
+				recorroArbol(a^.HD, maxCant, maxCod);
+			end;
+		end;
+	
+	var
+		maxCantidad, maxCodigo: integer; 
+	begin
+		maxCantidad := -1;
+		maxCodigo := 0;
+		recorroArbol(a, maxCantidad, maxCodigo);
+		retornoCodMasPasajes := maxCodigo;
+	end;
+
+// FIN C
+
+
+
+// PROGRAMA PRINCIPAL		
+var 
+	a: arbol;
+	codciud, codigoMasPasajes: integer;
+	ld: listaPasajes;
+	
+begin
+	Randomize;
+	a := nil;
+	cargarArbol(a);
+	imprimirArbol(a); // NO LO PIDE A. 
+	
+	writeln('Ingrese un codigo de ciudad destino para retornar todos los pasajes hacia esa ciudad: ');
+	readln(codciud);
+	ld := nil;
+	retornoListaCodCiud(a, codciud, ld);
+	imprimirLista(ld);
+	
+	codigoMasPasajes := retornoCodMasPasajes(a);
+end.
