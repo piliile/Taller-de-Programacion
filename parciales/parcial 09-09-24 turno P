@@ -8,7 +8,8 @@ II. Un vector que almacene en cada posicion el nombre de la categoria y la canti
 esa categoria.
 B. Implementar un modulo que reciba el arbol de A y un codigo de comida. El modulo debe retornar la cantidad de compras 
 realizadas al codigo de comida ingresado.
-}
+C. Implementar un modulo que reciba el vector de A, lo ordene por cantidad de compras de menor a mayor y retorne la categoria
+con mayor cantidad de entregas. }
 program parcialTurnoP;
 const 
 	corte = 0;
