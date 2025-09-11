@@ -1,0 +1,192 @@
+{Una clinica necesita un sistema para el procesamiento de las atenciones realizadas a los pacientes.
+A. Implementar un modulo que lea las atenciones, de cada una se lee, dni del paciente, numero de mes y
+codigo de diagnostico (1..15). La lectura finaliza con el mes 0.
+El modulo debe retornar dos estructuras de datos: 
+I. Una estructura de datos eficiente para la busqueda por dni de paciente. Para cada dni se debe almacenar la cantidad total
+de atenciones recibidas.
+II. Otra estructura de datos con la cantidad de atenciones realizadas para cada diagnostioco.
+B. Implementar un modulo que reciba la estructura generada en A.I. , dos numeros de dni y un valor entero X. Este modulo debe
+retornar la cantidad de pacientes con mas de X atenciones, cuyo dni esté entre los 2 numeros de dni recibidos.
+C. Implementar un modulo RECURSIVO que recibe la estructura generada en A.II. , y retorne la cantidad de diagnosticos  para los cuales
+la cantidad de atenciones fue 0.}
+program parcialTurnoFTema2;
+const
+	corte = 0;
+	dfDiagnostico = 15;
+	dfMes = 12;
+	
+type
+	rangoDiagnostico = 1..dfDiagnostico;
+	rangoMes = 0..dfMes;
+	
+	atencion = record
+		dni: integer;
+		mes: rangoMes;
+		diagnostico: rangoDiagnostico;
+	end;
+	
+	datosArbol = record
+		dni: integer;
+		cantidadAtenciones: integer;
+	end;
+	
+	arbol = ^nodo; 
+	nodo = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	vectorAtenciones = array [rangoDiagnostico] of integer;
+	
+	
+//  MÓDULOS
+
+// INICIO INCISO A
+	procedure leerAtencion(var at: atencion);
+	begin
+		at.mes := random(13);
+		writeln('El mes leido es: ', at.mes);
+		if (at.mes <> corte) then begin 
+			at.dni := random(500);
+			writeln('El dni leido es: ', at.dni);
+			at.diagnostico := random(15) + 1;
+			writeln('El diagnostico leido es: ', at.diagnostico);
+			writeln('///////////////////////////////////////');
+		end;
+	end;
+	
+	procedure agregar(var a: arbol; dni: integer);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato.dni := dni;
+			a^.dato.cantidadAtenciones := 1;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.dni = dni) then 
+				a^.dato.cantidadAtenciones := a^.dato.cantidadAtenciones + 1
+			else begin
+				if (a^.dato.dni > dni) then 
+					agregar(a^.HI, dni)
+				else
+					agregar(a^.HD, dni);
+			end;
+		end;
+	end;
+	
+	procedure inicializarVectorAtenciones(var v: vectorAtenciones);
+	var
+		i: rangoDiagnostico;
+	begin
+		for i := 1 to dfDiagnostico do 
+			v[i] := 0;
+	end;
+	
+	procedure agregarVec(var v: vectorAtenciones; diag: rangoDiagnostico);
+	begin
+		v[diag] := v[diag] + 1;
+	end;
+	
+	procedure cargarEstructuras(var a: arbol; var v: vectorAtenciones);
+	var
+		at: atencion;
+	begin 
+		leerAtencion(at);
+		while (at.mes <> corte) do begin 
+			agregar(a, at.dni);
+			agregarVec(v, at.diagnostico);
+			leerAtencion(at);
+		end;
+	end;
+// FIN INCISO A
+
+// INICIO NO LO PIDE A
+	procedure imprimirArbol(a: arbol);
+	begin
+		if (a <> nil) then begin 
+			imprimirArbol(a^.HI);
+			writeln('El dni del paciente es: ', a^.dato.dni, '. Y su cantidad de atenciones recibidas es: ', a^.dato.cantidadAtenciones);
+			writeln('/////////////////////////////////////////////////////');
+			imprimirArbol(a^.HD);
+		end;
+	end;
+
+	procedure imprimirVector(v: vectorAtenciones);
+	var
+		i: rangoDiagnostico;
+	begin
+		for i := 1 to dfDiagnostico do begin
+			writeln('El diagnostico ', i, ', tiene un total de atenciones de: ', v[i]);
+			writeln('////////////////////////////////////////////////');
+		end;
+	end;
+// FIN NO LO PIDE A
+
+// INICIO INCISO B
+	function retornoCantidadCumplen(a: arbol; dni1, dni2, numero: integer): integer;
+	begin
+		if (a = nil) then 
+			retornoCantidadCumplen := 0
+		else begin
+			if (a^.dato.dni >= dni1) then begin 
+				if (a^.dato.dni <= dni2) then begin
+					if (a^.dato.cantidadAtenciones > numero) then 
+						retornoCantidadCumplen := 1 + retornoCantidadCumplen(a^.HI, dni1, dni2, numero) + retornoCantidadCumplen(a^.HD, dni1, dni2, numero)
+					else
+						retornoCantidadCumplen := retornoCantidadCumplen(a^.HI, dni1, dni2, numero)+ retornoCantidadCumplen(a^.HD, dni1, dni2, numero);
+				end
+				else
+					retornoCantidadCumplen := retornoCantidadCumplen(a^.HI, dni1, dni2, numero);
+			end
+			else
+				retornoCantidadCumplen := retornoCantidadCumplen(a^.HD, dni1, dni2, numero);
+		end;
+	end;
+
+// FIN INCISO B
+
+// INICIO INCISO C
+
+	procedure retornoCantidadDiagCumplen(v: vectorAtenciones; pos: integer; var cantidadDiagnosticosCumplen: integer);
+	begin
+		if (pos <= dfDiagnostico) then begin 
+			if (v[pos] = 0) then 
+				cantidadDiagnosticosCumplen := cantidadDiagnosticosCumplen + 1;
+			retornoCantidadDiagCumplen(v, pos+1, cantidadDiagnosticosCumplen);
+		end;
+	end;
+
+// FIN INCISO C
+
+
+// PROGRAMA PRINCIPAL
+
+var
+	a: arbol;
+	v: vectorAtenciones;
+	numero, dni1, dni2, cantidadPacCumplen, cantidadDiagCumplen: integer;
+begin 
+	Randomize;
+	a := nil;
+	inicializarVectorAtenciones(v);	
+	cargarEstructuras(a, v); // A
+	writeln('El arbol impreso quedaría de la siguiente manera: '); imprimirArbol(a); // NO LO PIDE A
+	writeln('El vector impreso quedaría de la siguiente manera: '); imprimirVector(v); // NO LO PIDE A	
+		
+	writeln('Ingrese un dni, considerelo como el límite inferior de un rango: ');
+	readln(dni1);
+	writeln('Ingrese otro dni, considerelo como el límite superior de un rango: ');
+	readln(dni2);
+	writeln('Para retornar la cantidad de pacientes que superen un numero, ingrese el mismo: ');
+	readln(numero);
+	cantidadPacCumplen := retornoCantidadCumplen(a, dni1, dni2, numero); // B
+	writeln('La cantidad de pacientes que superan el numero ', numero, ' y que están entre ', dni1, ' y ', dni2, ', son: ', cantidadPacCumplen); // NO LO PIDE B
+
+	cantidadDiagCumplen := 0;
+	numero := 1;
+	retornoCantidadDiagCumplen(v, numero, cantidadDiagCumplen); // podia hacerlo como funcion igual.
+	writeln('La cantidad de diagnosticos que la cantidad de atenciones fue 0 son: ', cantidadDiagCumplen); // no lo pide
+end.
