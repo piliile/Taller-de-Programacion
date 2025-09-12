@@ -1,0 +1,201 @@
+program parcialturnoHtema2;
+const
+	corte = 0;
+
+type
+	alquiler = record
+		dnicliente: integer;
+		patente: integer;
+		mes: integer;
+		anio: integer;
+	end;
+	
+	datosLista = record
+		dnicliente: integer;
+		mes: integer;
+		anio: integer;
+	end;
+	
+	listaAlquileres = ^nodo;
+	nodo = record	
+		dato: datosLista;
+		sig: listaAlquileres;
+	end;
+	
+	datosArbol = record
+		patente: integer;
+		lista: listaAlquileres;
+	end;
+	
+	arbol = ^nodo2;
+	nodo2 = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	
+// MÓDULOS
+// INICIO A
+	procedure leerAlquiler(var alq: alquiler);
+	begin
+		alq.patente := random(700);
+		if (alq.patente <> corte) then begin
+			alq.mes := random(12) + 1;
+			alq.anio := random(24) + 2000;
+			alq.dnicliente := random(5000) + 1;
+		end;
+	end;
+	
+	procedure agregar(a: arbol; dL: datosLista; pat: integer);
+		
+		procedure agregarAdelante(var l: listaAlquileres; dL: datosLista);
+		var
+			nue: listaAlquileres;
+		begin
+			new(nue);
+			nue^.dato := dL;
+			nue^.sig := l;
+			l := nue;
+		end;
+		
+	begin
+		if (a = nil) then begin
+			new(a);
+			a^.dato.patente := pat;
+			a^.dato.lista := nil;
+			agregarAdelante(a^.dato.lista, dL);
+			a^.HI := nil; a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.patente = pat) then 
+				agregarAdelante(a^.dato.lista, dL)
+			else begin
+				if (a^.dato.patente > pat) then
+					agregar(a^.HI, dL, pat)
+				else
+					agregar(a^.HD, dL, pat);
+			end;
+		end;
+	end;
+
+	procedure cargarArbol(var a: arbol);
+		
+		procedure cargarDatosLista(var dL: datosLista; alq: alquiler);
+		begin
+			dL.dnicliente := alq.dnicliente;
+			dL.mes := alq.mes;
+			dL.anio := alq.anio;
+		end;
+		
+	var
+		alq: alquiler;
+		dL: datosLista;
+	begin
+		leerAlquiler(alq);
+		while (alq.patente <> corte) do begin
+			cargarDatosLista(dL, alq);
+			agregar(a, dL, alq.patente);
+			leerAlquiler(alq);
+		end;
+	end;
+// FIN A
+
+// INICIO B
+	function retornoCantidadAlquileres(a: arbol; dni: integer): integer;
+			
+		procedure recorroArbol(a: arbol; dni: integer; var canti: integer);
+			
+			procedure recorroListaYRetorno(l: lista; dni: integer; var cantidad: integer);
+			begin
+				while (l <> nil) do begin 
+					if (l^.dato.dnicliente = dni) then 
+						cantidad := cantidad + 1;
+					l := l^.sig;
+				end;
+			end;
+			
+		begin
+			if (a <> nil) then begin
+				if (a^.dato.lista <> nil) then 
+					recorroLista(a^.dato.lista, dni, canti);
+				recorroArbol(a^.HI, dni, canti);
+				recorroArbol(a^.HD, dni, canti);
+			end;
+		end;
+	
+	var
+		cantAlq: integer;
+	begin
+		cantAlq := 0;
+		recorroArbol(a, dni, cantAlq);
+		retornoCantidadAlquileres := cantAlq;
+	end;
+	{MENOS RESBUCADO QUE LO QUE HICE YO: 
+	function retornoCantidadAlquileres(a: arbol; dni: integer): integer
+		function contarListaDniIgual(l: lista, dni: integer): integer;
+		var
+			auxCant: integer;
+		begin	
+			auxCant := 0;
+			while (l <> nil) do begin 
+				if (l^.dato.dni = dni) then 
+					auxCant := auxCant + 1;
+				l := l^.sig;
+			end;
+			contarListaDniIgual := auxCant;
+		end;
+	begin
+		if (a = nil) then 
+			retornoCantidadAlquileres := 0
+		else
+			retornoCantidadAlquileres := contarListaDniIgual(a^.dato.lista, dni) + retornoCantidadAlquileres(a^.HI, dni) + retornoCantidadAlquileres(a^.HD, dni);	
+	end;}
+// FIN B
+
+// INICIO C
+	function retornoCantAlquileresRango(a: arbol; anio, valor1, valor2: integer): integer;
+		function contarNodosAnio(l: listaAlquileres; a: integer): integer;
+		begin
+			if (l <> nil) then begin
+				if (l^.dato.anio = a) then 
+					contarNodosAnio := 1 + contarNodosAnio(l^.sig, a)
+				else
+					contarNodosAnio := contarNodosAnio(l^.sig, a);
+			end
+			else
+				contarNodosAnio := 0;
+		end;
+	begin
+		if (a = nil) then 	
+			retornoCantAlquileresRango := 0
+		else begin
+			if (a^.dato.patente >= valor1) then begin 
+				if(a^.dato.patente <= valor2) then 
+						retornoCantAlquileresRango := contarNodosAnio(a^.dato.lista, anio) + retornoCantAlquileresRango(a^.HI, anio, valor1, valor2) + retornoCantAlquileresRango(a^.HD, anio, valor1, valor2);
+				else
+					retornoCantAlquileresRango := retornoCantAlquileresRango(a^.HI, anio, valor1, valor2);
+			end
+			else
+				retornoCantAlquileresRango := retornoCantAlquileresRango(a^.HD, anio, valor1, valor2);
+		end;
+	end;
+// PROGRAMA PRINCIPAL
+var
+	a: arbol;
+	dnicli, cantAlqui: integer;
+	
+begin
+	Randomize;
+	a := nil;
+	cargarArbol(a);
+	
+	readln(dnicli);
+	cantAlqui := retornoCantidadAlquileres(a, dnicli);
+	
+	readln(anioleido);
+	readln(valor1);
+	readln(valor2);
+	cantAlquileres := retornoCantAlquileresRango(a, anioleido, valor1, valor2);
+	
+end.
