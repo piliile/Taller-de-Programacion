@@ -1,0 +1,149 @@
+program parcialTurnoBTema1;
+const
+	corte = 0;
+	dfDia = 30;
+type
+	rangoDia = 1..dfDia;
+	
+	compra = record
+		dia: rangoDia;
+		cantidadproductos: integer;
+		monto: real;
+	end;
+	
+	listaCompras = ^nodo;
+	nodo = record
+		dato: compra;
+		sig: listaCompras;
+	end;
+	
+	datosArbol = record
+		codigocliente: integer;
+		lista: listaCompras;
+	end;
+	
+	arbol = ^nodo2;
+	nodo2 = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+
+	procedure leercompra(var c: compra);
+	begin
+		c.cantidadproductos := random(100);
+		if (c.cantidadproductos <> corte) then begin
+			c.dia := random(30) + 1;
+			c.monto := random(5000) + 200;
+		end;
+	end;
+	
+	procedure agregarAdelante(var l: listaCompras; c: compra);
+	var
+		nue: listaCompras;
+	begin
+		new(nue);
+		nue^.dato := c;
+		nue^.sig := l;
+		l := nue;
+	end;
+		
+	procedure agregar(var a: arbol; c: compra; codcli: integer);
+		
+	begin
+		if (a =nil) then begin 
+			new(a);
+			a^.dato.codigocliente := codcli;
+			a^.dato.lista := nil;
+			agregarAdelante(a^.dato.lista, c);
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.codigocliente = codcli) then 
+				agregarAdelante(a^.dato.lista, c)
+			else begin
+				if (a^.dato.codigocliente > codcli) then 
+					agregar(a^.HI, c, codcli)
+				else
+					agregar(a^.HD, c, codcli):
+			end;
+		end;
+			
+	procedure cargarArbol(var a: arbol);
+	var
+		c: compra;
+		codcli: integer;
+	begin
+		leercompra(c);
+		while(c.cantidadproductos <> corte) do begin 
+			codcli := random(200);
+			agregar(a, c, codcli);
+			leercompra(c);
+		end;
+	end;
+	
+	procedure retornoCompras(a: arbol; cc: integer; var l2: listaCompras);
+		
+		procedure cargoSegundaLista(var l2: listaCompras; l: listaCompras);
+		begin
+			while (l <> nil ) do begin 
+				agregarAdelante(l2, l^.dato);
+				l := l^.sig;
+			end;
+		end;
+		
+	begin
+		if (a = nil) then 
+			l2 := nil;
+		else begin
+			if (a^.dato.codigocliente = cc) then 
+				cargoSegundaLista(l2, l)
+			else begin
+				if(a^.dato.codigocliente > cc) then 
+					retornoCompras(a^.HI, cc, l2)
+				else
+					retornoCompras(a^.HD, cc, l2);
+			end;
+		end;
+	end;
+	
+	
+	function retornoMontoMayor(l2: listaCompras): real;
+	
+		procedure recorroYRetorno(l2: lista; var montomax: real; var cp: integer);
+		begin
+			if (l2 <> nil) then begin
+				if (l2^.dato.cantidadproductos > cp) then begin 
+					montomax := l2^.dato.monto;
+					cp := l2^.dato.cantidadproductos;
+				end;
+				recorroYRetorno(l2^.sig, montomax, cp);
+			end;
+		end;
+	
+	var
+		montomax: real;
+		cantprodsmax: integer;
+	begin
+		montomax := -1;
+		cantprodsmax := 0;
+		recorroYRetorno(l2, montomax, cantprodsmax);
+		retornoMontoMayor := montomax;
+	end;
+var
+	a: arbol;
+	codigocli: integer;
+	l2: listaCompras;
+	montoCompraMayor: real;
+begin
+	Randomize;
+	a := nil;
+	cargarArbol(a);
+	
+	readln(codigocli);
+	l2 := nil;
+	retornoCompras(a, codigocli, l2);
+
+	montoCompraMayor := retornoMontoMayor(l2);
+end.
