@@ -1,0 +1,185 @@
+program parcialTurnoF;
+const
+	dfMaterialBase = 8;
+	corte = 0;
+
+type
+	rangoMaterial = 1..dfMaterialBase;
+	
+	artesania = record
+		numeroId: integer;
+		dniArtesano: integer;
+		materialBase: rangoMaterial;
+	end;
+	
+	datosArbol = record
+		dniArtesano: integer;
+		cantidadArtesanias: integer;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	datosVector = record
+		materialBase: rangoMaterial;
+		cantidadArtesanias: integer;
+	end;
+	
+	vectorArtesanias = array [rangoMaterial] of datosVector;
+	
+
+
+// MÓDULOS	
+	
+// INICIO A
+	procedure leerArtesanias(var ar: artesania);
+	begin
+		ar.dniArtesano := random(100);
+		writeln('El dni del artesano es: ', ar.dniArtesano);
+		if (ar.dniArtesano <> corte) then begin
+			ar.numeroId := random(100) + 2000;
+			writeln('El numero de identificacion es: ', ar.numeroId);
+			ar.materialBase := random(8) +1;
+			writeln('El codigo de material base es: ', ar.materialBase);
+			writeln('//////////////////////////////////////////////////');
+		end;
+	end;
+	
+	procedure inicializarVector(var v: vectorArtesanias);
+	var
+		i: rangoMaterial;
+	begin
+		for i := 1 to dfMaterialBase do begin 
+			v[i].materialBase := i;
+			v[i].cantidadArtesanias := 0;
+		end;
+	end;
+	
+	procedure agregar(var a: arbol; dni: integer);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato.dniArtesano := dni;
+			a^.dato.cantidadArtesanias := 1;
+			a^.HI := nil; a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.dniArtesano = dni) then 
+				a^.dato.cantidadArtesanias := a^.dato.cantidadArtesanias + 1
+			else begin
+				if (a^.dato.dniArtesano > dni) then 
+					agregar(a^.HI, dni)
+				else
+					agregar(a^.HD, dni);
+			end;
+		end;
+	end;
+
+	procedure agregarVec(var v: vectorArtesanias; matbase: integer);
+	begin
+		v[matbase].cantidadArtesanias := v[matbase].cantidadArtesanias + 1;
+	end;
+	
+	procedure cargarEstructuras(var a: arbol; var v: vectorArtesanias);
+	var
+		ar: artesania;
+	begin
+		leerArtesanias(ar);
+		while (ar.dniArtesano <> corte) do begin 
+			agregar(a, ar.dniArtesano);
+			agregarVec(v, ar.materialBase);
+			leerArtesanias(ar);
+		end;
+	end;
+// FIN A
+// INICIO NO PIDE A
+	procedure imprimirArbol(a: arbol);
+	begin
+		if (a <> nil) then begin 
+			imprimirArbol(a^.HI);
+			writeln('El dni es: ', a^.dato.dniArtesano, ' y la cantidad de artesanias es: ', a^.dato.cantidadArtesanias);
+			writeln('//////////////////////////////////////////////////////////////////////////////');
+			imprimirArbol(a^.HD);
+		end;
+	end;
+	procedure imprimirVector(v: vectorArtesanias);
+	var
+		i: rangoMaterial;
+	begin
+		for i := 1 to dfMaterialBase do 
+			writeln('El codigo de material base ', i, ' tiene una cantidad de artesanias de: ', v[i].cantidadArtesanias);
+	end;
+// FIN NO PIDE A
+
+// INICIO B
+	function retornoCantidadCumplen(a: arbol; dnileido: integer): integer;
+	begin
+		if (a = nil) then 
+			retornoCantidadCumplen := 0
+		else begin
+			if (a^.dato.dniArtesano < dnileido) then 
+				retornoCantidadCumplen := 1 + retornoCantidadCumplen(a^.HI, dnileido) + retornoCantidadCumplen(a^.HD, dnileido)
+			else
+				retornoCantidadCumplen := retornoCantidadCumplen(a^.HI, dnileido);
+		end;
+	end;
+// FIN B
+ 
+// INICIO C
+	procedure ordenarVector(var v: vectorArtesanias; var maxName: string);
+	var
+		i, j: integer;
+		act: datosVector;
+		vN: array [rangoMaterial] of string = ('Madera', 'Yeso', 'Ceramica', 'Vidrio', 'Acero', 'Porcelana', 'Lana', 'Cartón');
+	begin
+		for i := 2 to dfMaterialBase do begin 
+			act := v[i];
+			j := i - 1;
+			while (j > 0) and (v[j].cantidadArtesanias > act.cantidadArtesanias) do begin 
+				v[j + 1] := v[j];
+				j := j - 1;
+			end;
+			v[j + 1] := act;
+		end;
+		maxName := vN[v[dfMaterialBase].materialBase];
+	end;
+
+
+// FIN C
+
+// PROGRAMA PRINCIPAL 
+
+var
+	a: arbol;
+	v: vectorArtesanias;
+	cantCumplen, dnileido: integer;
+	nombreMaximo: string;
+begin
+	Randomize;
+	a := nil;
+	inicializarVector(v);
+	cargarEstructuras(a, v);
+	writeln ('El arbol impreso quedaria de la siguiente manera: '); // NO PIDE A
+	imprimirArbol(a); // NO PIDE A
+	writeln('/////////////////////////////////////////////');
+	writeln('El vector impreso quedaria de la siguiente manera: '); // NO PIDE A 
+	imprimirVector(v); // NO PIDE A
+
+
+	writeln('');
+	writeln('Ingrese un numero de dni para buscar la cantidad de artesanos menores a ese numero: ');
+	readln(dnileido);
+	cantCumplen := retornoCantidadCumplen(a, dnileido);
+	writeln('La cantidad de artesanos menores al dni ', dnileido, ' son: ', cantCumplen); // NO PIDE B
+	
+	writeln('');
+	ordenarVector(v, nombreMaximo);
+	writeln('El vector impreso de manera ordenada quedaria de la siguiente manera: '); // NO PIDE C
+	imprimirVector(v); // NO PIDE C
+	writeln ('El nombre de material base con mayor cantidad de artesanias es: ', nombreMaximo);
+end.
+
