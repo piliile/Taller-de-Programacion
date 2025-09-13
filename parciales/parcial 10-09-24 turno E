@@ -1,0 +1,182 @@
+program parcialturnoE;
+const
+	dfGenero = 7;
+	corte = 0;
+	
+type
+	rangoGenero = 1..dfGenero;
+	
+	libro = record
+		isbn: integer;
+		codigoAutor: integer;
+		genero: rangoGenero;
+	end;
+	
+	datosArbol = record
+		codigoAutor: integer;
+		cantidadLibrosAutor: integer;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	datosVector = record
+		genero: rangoGenero;
+		cantidadLibrosGenero: integer;
+	end;
+	
+	vectorGeneros = array[rangoGenero] of datosVector;
+	
+	
+// MODULOS
+
+// INICIO A
+	procedure inicializarVectorGeneros(var v: vectorGeneros);
+	var
+		i: rangoGenero;
+	begin
+		for i := 1 to dfGenero do begin
+			v[i].genero := i;
+			v[i].cantidadLibrosGenero := 0;
+		end;
+	end;
+	
+	procedure leerLibro(var li: libro);
+	begin
+		li.isbn := random(10);
+		if (li.isbn <> corte) then begin 
+			li.codigoAutor := random(200) + 1;
+			li.genero := random(7) + 1;
+		end;
+	end;
+	
+	procedure agregarEnArbol(var a: arbol; codAut: integer);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato.codigoAutor := codAut;
+			a^.dato.cantidadLibrosAutor := 1;
+			a^.HI := nil; a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.codigoAutor = codAut) then 
+				a^.dato.cantidadLibrosAutor := a^.dato.cantidadLibrosAutor + 1
+			else begin 
+				if (a^.dato.codigoAutor > codAut) then 
+					agregarEnArbol(a^.HI, codAut)
+				else
+					agregarEnArbol(a^.HD, codAut);
+				
+				end;
+		end;
+	end;
+	
+	procedure agregarEnVector(var v: vectorGeneros; gen: rangoGenero);
+	begin
+		v[gen].cantidadLibrosGenero := v[gen].cantidadLibrosGenero + 1; 
+	end;
+	
+	procedure cargarEstructuras(var a: arbol; var v: vectorGeneros);
+	var
+		li: libro;
+	begin
+		leerLibro(li);
+		while(li.isbn <> corte) do begin 
+			agregarEnArbol(a, li.codigoAutor);
+			agregarEnVector(v, li.genero);
+			leerLibro(li);
+		end;
+	end;
+// FIN A
+// INICIO NO PIDE A
+	procedure imprimirArbol(a: arbol);
+	begin
+		if (a <> nil) then begin 
+			imprimirArbol(a^.HI);
+			writeln('El codigo de autor es: ', a^.dato.codigoAutor, ' y tiene una cantidad de libros de: ', a^.dato.cantidadLibrosAutor);
+			writeln('');
+			imprimirArbol(a^.HD);
+		end;
+	end;
+	procedure imprimirVector(v: vectorGeneros);
+	var 
+		i: rangoGenero;
+	begin 
+		for i := 1 to dfGenero do begin
+			writeln('El genero ', i, ' tiene una cantidad de libros de: ', v[i].cantidadLibrosGenero);
+			writeln('');
+		end;
+	end;
+// FIN NO PIDE A
+
+// INICIO INCISO B
+	procedure ordenarVector(var v: vectorGeneros; var nombreGeneroMax: string);
+	var
+		i, j: integer;
+		act: datosVector;
+		vNombres: array [rangoGenero] of string = ('Literario', 'Filosofia', 'Biologia', 'Arte', 'Computacion', 'Medicina', 'Ingenieria');
+	begin
+		for i := 2 to dfGenero do begin 
+			act := v[i];
+			j := i - 1;
+			while (j > 0) and (v[j].cantidadLibrosGenero < act.cantidadLibrosGenero) do begin 
+				v[j + 1] := v[j];
+				j := j - 1;
+			end;
+			v[j + 1] := act;
+		end;
+		nombreGeneroMax := vNombres[v[1].genero];
+	end;
+// FIN INCISO B
+
+// INICIO INCISO C
+	function retornoCantidadEntreRango(a: arbol; cod1, cod2: integer): integer;
+	begin
+		if (a = nil) then 	
+			retornoCantidadEntreRango := 0
+		else begin 
+			if (a^.dato.codigoAutor >= cod1) then begin 
+				if (a^.dato.codigoAutor <= cod2) then 
+					retornoCantidadEntreRango := a^.dato.cantidadLibrosAutor + retornoCantidadEntreRango(a^.HI, cod1, cod2) + retornoCantidadEntreRango(a^.HD, cod1, cod2)
+				else
+					retornoCantidadEntreRango := retornoCantidadEntreRango(a^.HI, cod1, cod2);
+			end
+			else
+				retornoCantidadEntreRango := retornoCantidadEntreRango(a^.HD, cod1, cod2);
+		end;
+	end;
+
+
+
+// PROGRAMA PRINCIPAL
+
+var
+	a: arbol;
+	v: vectorGeneros;
+	nombreGeneroMaximo: string;
+	codigo1, codigo2, cantTot: integer;
+begin
+	Randomize;
+	a := nil;
+	inicializarVectorGeneros(v);
+	cargarEstructuras(a, v); // A
+	writeln('El arbol quedaria de la siguiente manera: '); imprimirArbol(a); // NO PIDE A
+	writeln('Y el vector asi: '); imprimirVector(v); // NO PIDE A
+	
+	nombreGeneroMaximo := '';
+	ordenarVector(v, nombreGeneroMaximo); // B	
+	writeln('El vector ordenado quedaria de la siguiente manera: '); // NO PIDE B
+	imprimirVector(v); // NO PIDE B
+	writeln('El nombre del genero maximo es: ', nombreGeneroMaximo); // NO PIDE B
+	
+	writeln('Ingrese un codigo, considerelo como el limite inferior de un rango: ');
+	readln(codigo1);
+	writeln('Ingrese otro codigo, considerelo como el limite superior de un rango, debe ser mayor al ingresado anteriormente: ');
+	readln(codigo2);
+	cantTot := retornoCantidadEntreRango(a, codigo1, codigo2); // C
+	writeln('La cantidad total de codigos de autores dentro del rango ', codigo1, ' y ', codigo2, ' son: ', cantTot); // NO PIDE C
+end.
