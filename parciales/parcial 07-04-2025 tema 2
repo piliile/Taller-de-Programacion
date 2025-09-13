@@ -1,0 +1,139 @@
+program parcialCorreoArg2025;
+const
+	corte = 0;
+
+type
+	paquete = record
+		codigoEnvio: integer;
+		dniEmisor: integer;
+		dniReceptor: integer;
+		cantidadObjetos: integer;
+		peso: real;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: paquete;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	lista = ^nodo2;
+	nodo2 = record
+		dato: paquete;
+		sig: lista;
+	end;
+	
+// MODULOS
+
+// INICIO A
+
+	procedure leerPaquete(var p: paquete);
+	begin
+		p.codigoEnvio := random(200);
+		if (p.codigoEnvio <> corte) then begin 
+			p.dniEmisor := random(7000) + 500;
+			p.dniReceptor := random(7000) + 500;
+			p.cantidadObjetos := random(10);
+			p.peso := random(1000) + 500;
+		end;
+	end;
+	
+	procedure agregarEnArbol(var a: arbol; p: paquete);
+	begin
+		if (a = nil) then begin
+			new(a);
+			a^.dato := p;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.peso > p.peso) then 
+				agregarEnArbol(a^.HI, p)
+			else
+				agregarEnArbol(a^.HD, p);
+		end;
+	end;
+	
+	procedure cargarArbol(var a: arbol);
+	var
+		p: paquete;
+	begin
+		leerPaquete(p);
+		while (p.codigoEnvio <> corte) do begin 
+			agregarEnArbol(a, p);
+			leerPaquete(p);
+		end;
+	end;
+// FIN A
+	
+// INICIO B
+	procedure agregarAdelante(var l: lista; p: paquete);
+	var
+		nue: lista;
+	begin 
+		new(nue);
+		nue^.dato := p;
+		nue^.sig := l;
+		l := nue;
+	end;
+
+	procedure retornoLista(a: arbol; valor1, valor2: integer; var l: lista);
+	begin
+		if (a <> nil) then begin
+			if (a^.dato.peso >= valor1) then begin 	
+				if (a^.dato.peso <= valor2) then begin
+					agregarAdelante(l, a^.dato);
+					retornoLista(a^.HI, valor1, valor2, l);
+					retornoLista(a^.HD, valor1, valor2, l);
+				end
+				else
+					retornoLista(a^.HI, valor1, valor2, l);
+			end
+			else
+				retornoLista(a^.HD, valor1, valor2, l);
+		end;
+	end;
+
+	procedure retornoInfo(a: arbol; var paq: paquete); // preguntar si puedo retornar algo que no me pide el enunciado al programa principal
+		procedure buscoMaximo(a: arbol; var paq: paquete; var cantMax: integer);
+		begin
+			if (a^.dato.cantidadObjetos > cantMax) then begin 
+				cantMax := a^.dato.cantidadObjetos;
+				paq := a^.dato;
+			end;
+		end;
+		procedure recorroArbol(a: arbol; var paq: paquete; var cantMax: integer);
+		begin
+			if (a <> nil) then begin 	
+				retornoInfo(a^.HI, paq);
+				buscoMaximo(a, paq, cantMax);
+				retornoInfo(a^.HD, paq);
+			end;
+		end;
+	var
+		cantMax: integer;
+	begin
+		cantMax := -1;
+		recorroArbol(a, paq, cantMax);
+	end;
+
+	
+	
+// PROGRAMA PRINCIPAL
+var
+	a: arbol;
+	valor1, valor2: integer;
+	l: lista;
+	paq: paquete;
+begin
+	Randomize;
+	a := nil;
+	cargarArbol(a); // A
+	
+	readln(valor1); readln(valor2);
+	l := nil;
+	retornoLista(a, valor1, valor2, l);
+	
+	retornoInfo(a, paq);
+end.
