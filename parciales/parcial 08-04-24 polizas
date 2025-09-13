@@ -1,0 +1,164 @@
+program parciappolizas;
+const
+	dfEmision = 2023;
+	corte = -1;
+
+type
+	rangoEmision = 2000..dfEmision;
+	
+	fecha = record
+		dia: integer;
+		mes: integer;
+		anio: integer;
+	end;
+	
+	poliza = record
+		dniCliente: integer;
+		sumaAsegurada: real;
+		valorCuota: real;
+		vencimiento: fecha;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: poliza;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	lista = ^nodo2;
+	nodo2 = record
+		dato: poliza;
+		sig: lista;
+	end;
+	vector = array [rangoEmision] of lista;
+	
+	
+	procedure leerPoliza(var p: poliza);
+		procedure leoFechaVencimiento(var f: fecha);
+		begin
+			f.dia := random(31) + 1;
+			f.mes := random(12) + 1;
+			f.anio := random(24) + 2000;
+		end;
+	begin
+		readln(p.dniCliente);
+		if (p.dniCliente <> corte) then begin 
+			p.sumaAsegurada := random(1000) + 100;
+			p.valorCuota := random(1000) + 100;
+			leoFechaVencimiento(p.vencimiento);
+		end;
+	end;
+	
+	procedure agregarEnArbol(var a: arbol; p: poliza);
+	begin
+		if (a = nil) then begin
+			new(a);
+			a^.dato := p;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin 
+			if (a^.dato.sumaAsegurada > p.sumaAsegurada) then 
+				agregarEnArbol(a^.HI, p)
+			else
+				agregarEnArbol(a^.HD, p);
+		end;
+	end;
+	
+	procedure cargarArbol(var a: arbol);
+	var
+		p: poliza;
+	begin
+		leerPoliza(p);
+		while (p.dniCliente <> corte) do begin 
+			agregarEnArbol(a, p);
+			leerPoliza(p);
+		end;
+	end;
+// FIN A
+
+// INICIO B
+	procedure inicializarVector(var v: vector);
+	var
+		i: rangoEmision;
+	begin
+		for i:= 2000 to dfEmision do
+			v[i] := nil;
+	end;
+	
+	procedure insertarOrdenado(var l: lista; p: poliza);
+	var
+		nue, act, ant: lista;
+	begin
+		new(nue);
+		nue^.dato := p;
+		act := l;
+		while (act <> nil) and (act^.dato.dniCliente < p.dniCliente) do begin 
+			ant := act;
+			act := act^.sig;
+		end;
+		if (act = l) then 
+			l := nue
+		else
+			ant^.sig := nue;
+		nue^.sig := act;
+	end;
+	
+	procedure retornoNuevaEstructura(a: arbol; valor: integer; var v: vector);
+	begin
+		if (a <> nil) then begin 
+			retornoNuevaEstructura(a^.HI, valor, v);
+			if (a^.dato.sumaAsegurada < valor) then 
+				insertarOrdenado(v[a^.dato.vencimiento.anio], a^.dato);
+			retornoNuevaEstructura(a^.HD, valor, v);
+		end;
+
+	end;
+	
+	function retornoCantidadPolizasDni(v: vector; dni: integer): integer;
+	
+		function cuentoPolizasMismoDni(l: lista; dni: integer): integer;
+		var
+			cantMismoDni: integer;
+		begin
+			cantMismoDni := 0;
+			while (l <> nil) do begin
+				if (l^.dato.dniCliente = dni) then 
+					cantMismoDni := cantMismoDni + 1;
+				l := l^.sig;
+			end;
+			cuentoPolizasMismoDni := cantMismoDni;
+		end;
+		
+	var
+		cantidadPolizas: integer;
+		i: rangoEmision;
+	begin
+		cantidadPolizas := 0;
+		for i := 2000 to dfEmision do 
+			if (v[i] <> nil) then 
+				cantidadPolizas := cantidadPolizas + cuentoPolizasMismoDni(v[i], dni);
+		retornoCantidadPolizasDni := cantidadPolizas;
+	end;
+	
+	
+// pp
+var
+	a: arbol;
+	valor, dni, cantPolizasDni: integer;
+	v: vector;
+	
+begin
+	Randomize;
+	a := nil;
+	cargarArbol(a); // A
+	
+	inicializarVector(v);
+	readln(valor);
+	retornoNuevaEstructura(a, valor, v); // B
+	
+	readln(dni);
+	cantPolizasDni := retornoCantidadPolizasDni(v, dni);
+end.
+	
