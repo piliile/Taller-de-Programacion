@@ -3,9 +3,10 @@ DNI de cliente, código de sucursal (1 a 10), número de factura y monto.
 a) Implementar un módulo que lea información de las ventas (la lectura finaliza al ingresar código de cliente 0 y retorne:
 i. Una estructura de datos eficiente para la búsqueda por DNI de cliente. Para cada DNI debe almacenarse una
 lista de todas sus compras (número de factura y monto).
-Ii. Una estructura de datos que almacene la cantidad de ventas de cada sucursal.
-b) Realizar un módulo que reciba la estructura generada en el inciso a) i, un monto y un DNI. El módulo debe retornar la cantidad de facturas cuyo monto es superior al monto ingresado para el DNI ingresado.
-Realizar un módulo recursivo que reciba la estructura generada en inciso a)li y retorne el código de sucursal con
+ii. Una estructura de datos que almacene la cantidad de ventas de cada sucursal.
+b) Realizar un módulo que reciba la estructura generada en el inciso a) i, un monto y un DNI. 
+El módulo debe retornar la cantidad de facturas cuyo monto es superior al monto ingresado para el DNI ingresado.
+c) Realizar un módulo recursivo que reciba la estructura generada en inciso a)li y retorne el código de sucursal con
 mayor cantidad de ventas.}
 program parcialTurnoH;
 const
