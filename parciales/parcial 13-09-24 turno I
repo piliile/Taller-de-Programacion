@@ -1,0 +1,159 @@
+program parcialturnoI;
+const
+	dfDia = 7;
+	corte = 0;
+
+type
+	rangoDia = 1..dfDia;
+	
+	alquiler = record
+		dniCliente: integer;
+		numeroChasis: integer;
+		cantidadDias: rangoDia;
+	end;
+	
+	datosArbol = record
+		dniCliente: integer;
+		numeroChasis: integer;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+
+	vector = array [rangoDia] of arbol;
+	
+	
+// MODULOS
+
+// INICIO INCISO A
+	procedure leerAlquiler(var alq: alquiler);
+	begin 
+		alq.numeroChasis := random(200);
+		if (alq.numeroChasis <> corte) then begin 
+			alq.dniCliente := random(7000) + 1;
+			alq.cantidadDias := random(7) + 1;
+		end;
+	end;
+	
+	procedure inicializarVector(var v: vector);
+	var
+		i: rangoDia;
+	begin
+		for i := 1 to dfDia do 
+			v[i] := nil;
+	end;
+	
+	procedure agregarEnArbol(var a: arbol; dA: datosArbol);
+	begin
+		if (a = nil) then begin
+			new(a);
+			a^.dato := dA;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin 
+			if (a^.dato.numeroChasis > dA.numeroChasis) then 
+				agregarEnArbol(a^.HI, dA)
+			else
+				agregarEnArbol(a^.HD, dA);
+		end;
+	end;			
+	
+	procedure cargarVector(var v: vector);
+		procedure cargarDatosArbol(var dA: datosArbol; alq: alquiler);
+		begin
+			dA.dniCliente := alq.dniCliente;
+			dA.numeroChasis := alq.numeroChasis;
+		end;
+	var
+		alq: alquiler;
+		dA: datosArbol;
+	begin
+		leerAlquiler(alq);
+		while (alq.numeroChasis <> corte) do begin 
+			cargarDatosArbol(dA, alq);
+			agregarEnArbol(v[alq.cantidadDias], dA);
+			leerAlquiler(alq);
+		end;
+	end;
+// FIN INCISO A
+	
+// INICIO INCISO B 
+	function retornoCantidadAlqPorDni(v: vector; dni: integer): integer;
+		function cantidadEnElArbol(a: arbol; dni: integer): integer;
+		begin
+			if (a <> nil) then begin
+				if (a^.dato.dniCliente = dni) then 
+					cantidadEnElArbol := 1 + cantidadEnElArbol(a^.HI, dni) + cantidadEnElArbol(a^.HD, dni)
+				else
+					cantidadEnElArbol := cantidadEnElArbol(a^.HI, dni) + cantidadEnElArbol(a^.HD, dni);
+			end
+			else
+				cantidadEnElArbol := 0
+		end;
+	
+	var
+		i: rangoDia; cantAlq: integer;
+	begin
+		cantAlq := 0;
+		for i := 1 to dfDia do 
+			if (v[i] <> nil) then // pero dsp en cantidadEnElArbol volveria a preguntar (????)
+				cantAlq := cantAlq + cantidadEnElArbol(v[i], dni);
+		retornoCantidadAlqPorDni := cantAlq;
+	end;
+// FIN INCISO B	
+	
+// INICIO INCISO C	
+	function cumpleDiaLeido(dia: integer): boolean;
+	begin
+		if (dia >= 1) and (dia <= 7) then 
+			cumpleDiaLeido := true
+		else
+			cumpleDiaLeido := false;
+	end;
+		
+	function retornoCantEntreNum(v: vector; dia: integer; numChasis1, numChasis2: integer): integer;
+		
+		function retornoAlquileres(a: arbol; numChasis1, numChasis2: integer): integer;
+		begin
+			if (a = nil) then 
+				retornoAlquileres := 0
+			else begin
+				if (a^.dato.numeroChasis >= numChasis1) then begin
+					if (a^.dato.numeroChasis <= numChasis2) then 
+						retornoAlquileres := 1 + retornoAlquileres(a^.HI, numChasis1, numChasis2) + retornoAlquileres(a^.HD, numChasis1, numChasis2)
+					else
+						retornoAlquileres := retornoAlquileres(a^.HI, numChasis1, numChasis2);
+				end
+				else
+					retornoAlquileres := retornoAlquileres(a^.HD, numChasis1, numChasis2);
+			end;
+		end;
+		
+	begin
+		retornoCantEntreNum := retornoAlquileres(v[dia], numChasis1, numChasis2);
+	end;
+// FIN INCISO C
+
+// PROGRAMA PRINCIPAL
+var
+	v: vector;
+	dni, cantIncisoB, dia, numeroChasis1, numeroChasis2, cantIncisoC: integer;
+begin
+	Randomize;
+	inicializarVector(v);
+	cargarVector(v);
+	
+	readln(dni);
+	cantIncisoB := retornoCantidadAlqPorDni(v, dni);
+	
+	readln(numeroChasis1); readln(numeroChasis2); readln(dia);
+	if (cumpleDiaLeido(dia)) then
+		cantIncisoC := retornoCantEntreNum(v, dia, numeroChasis1, numeroChasis2)
+	else
+		writeln('El dia ingresado no cumple el rango de dias.');
+end.
