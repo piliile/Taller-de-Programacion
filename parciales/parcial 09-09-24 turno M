@@ -1,15 +1,15 @@
 {Una clínica necesita un sistema para el procesamiento de las atenciones realizadas a los pacientes en jullo de 2024.
-a) Implementar un módulo que lea información de las atenciones. De cada atención se lee: matrícula del médico, dni del paciente, día y diagnóstico (valor entre A y F). La lectura finaliza con el del O. Se sugiere utilizar el módulo
+a) Implementar un módulo que lea información de las atenciones. De cada atención se lee: matrícula del médico, 
+dni del paciente, día y diagnóstico (valor entre A y F). La lectura finaliza con el del O. Se sugiere utilizar el módulo
 leerAtencion(). El módulo deber retornar dos estructuras:
 1. Un árbol binario de búsqueda ordenado por matrícula del médico. Para cada matrícula de médico debe
 almacenarse la cantidad de atenciones realizadas.
 I. Un vector que almacene en cada posición el tipo del género y la lista de los DNI de pacientes atendidos con
 ese diagnóstico.
-b) Implementar un módulo que reciba el árbol generado en a), una matrícula y retorne la cantidad total de atenciones realizadas por los médicos con matrícula superior a la matrícula ingresada.
-c)
-Realizar un módulo recursivo que reciba el vector generado en a) y retorne el diagnóstico con mayor cantidad de
-pacientes atendidos.
-}
+b) Implementar un módulo que reciba el árbol generado en a), una matrícula y retorne la cantidad total de atenciones realizadas 
+por los médicos con matrícula superior a la matrícula ingresada.
+c) Realizar un módulo recursivo que reciba el vector generado en a) y retorne el diagnóstico con mayor cantidad de
+pacientes atendidos.}
 program parcial090924;
 const
 	corte = 0;
