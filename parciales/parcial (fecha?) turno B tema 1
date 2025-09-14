@@ -1,3 +1,9 @@
+Un comercio necesita el procesamiento de las compras realizadas por sus clientes durante el mes de julio de 2022. De cada compra se conoce código del cliente, día, cantidad de productos y monto pagado.
+a) Implementar un módulo que lea compras, genere y retorne una estructura adecuada para la búsqueda por código del cliente, donde para cada código de cliente se almacenan juntas todas sus compras (día, cantidad de productos y monto) que realizó. La lectura finaliza con cantidad de productos 0. Se sugiere utilizar el módulo leerRegistro ().
+b) implementar un módulo que reciba la estructura generada en a) y un código de cliente y retorne todas las compras
+de dicho cliente.
+c) Realizar un módulo recursivo que reciba la estructura que retorna el inciso b) y retorne el monto de la compra con
+mayor cantidad de productos.
 program parcialTurnoBTema1;
 const
 	corte = 0;
