@@ -7,7 +7,7 @@ la búsqueda por suma asegurada.
 b) Un módulo que reciba la estructura generada en a) y devuelva otra estructura con las pólizas cuya suma asegurada
 sea menor a un valor recibido por parámetro. Esta estructura debe estar agrupada por año de vencimiento y ordenada por DNI de cliente.
 c) Un módulo que reciba la estructura generada en b) y devuelva la cantidad de pólizas de un cliente cuyo DNI se recibe por parámetro.}
-program parciappolizas;
+program parcialpolizas;
 const
 	dfEmision = 2023;
 	corte = -1;
