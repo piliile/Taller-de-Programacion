@@ -1,10 +1,12 @@
-{Se desea procesar las pólizas de una compañía de seguros. De cada póliza se conoce: DNI del cliente, suma asegurada, valor cuota y fecha de vencimiento. Un cliente puede tener más de una póliza. Las pólizas se comenzaron a emitir a partir del 2000 y finalizaron de emitirse en 2023.
+{Se desea procesar las pólizas de una compañía de seguros. De cada póliza se conoce: 
+DNI del cliente, suma asegurada, valor cuota y fecha de vencimiento. Un cliente puede tener más de una póliza. 
+Las pólizas se comenzaron a emitir a partir del 2000 y finalizaron de emitirse en 2023.
 Realice un programa que contenga:
-
-c)
-a) Un módulo que lea pólizas, hasta leer una póliza con DNI -1, y las almacene en una estructura eficiente para la búsqueda por suma asegurada.
-b) Un módulo que reciba la estructura generada en a) y devuelva otra estructura con las pólizas cuya suma asegurada sea menor a un valor recibido por parámetro. Esta estructura debe estar agrupada por año de vencimiento y ordenada por DNI de cliente.
-Un módulo que reciba la estructura generada en b) y devuelva la cantidad de pólizas de un cliente cuyo DNI se recibe por parámetro.}
+a) Un módulo que lea pólizas, hasta leer una póliza con DNI -1, y las almacene en una estructura eficiente para 
+la búsqueda por suma asegurada.
+b) Un módulo que reciba la estructura generada en a) y devuelva otra estructura con las pólizas cuya suma asegurada
+sea menor a un valor recibido por parámetro. Esta estructura debe estar agrupada por año de vencimiento y ordenada por DNI de cliente.
+c) Un módulo que reciba la estructura generada en b) y devuelva la cantidad de pólizas de un cliente cuyo DNI se recibe por parámetro.}
 program parciappolizas;
 const
 	dfEmision = 2023;
