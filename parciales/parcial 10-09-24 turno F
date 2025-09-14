@@ -1,3 +1,15 @@
+{La Feria del Artesano necesita un sistema para obtener estadísticas sobre las artesanías presentadas.
+a) Implementar un módulo que lea información de las artesanías. De cada artesanía se conoce: número de identificación de la artesanía, DNI del artesano y código del material base (1: madera, 2: yeso, 3: cerámica, 4: vidrio, 4: acero, 6: porcelana, 7: lana, 8: cartón). La lectura finaliza con el valor 0 para el DNI. Se sugiere utilizar el
+módulo leerArtesania(). El módulo deber retornar dos estructuras:
+I. Un árbol binario de búsqueda ordenado por DNI del artesano. Para cada DNI del artesano debe almacenarse la
+cantidad de artesanías correspondientes al DNI.
+i. Un vector que almacene para cada material base, el código del material base y la cantidad de artesanías del
+material base.
+b) Implementar un módulo que reciba el árbol generado en a) y un DNI. El módulo debe retornar la cantidad de
+c)
+artesanos con DNI menor al DNI ingresado.
+Implementar un módulo que reciba el vector generado en a), lo ordene por cantidad de artesanías de menor a
+menor y retorne el nombre de material base con mayor cantidad de artesanías.}
 program parcialTurnoF;
 const
 	dfMaterialBase = 8;
