@@ -1,0 +1,193 @@
+program parcialturnoK;
+const	
+	corte = 0;
+	dfGenero = 15;
+
+type
+	rangoGenero = 1..dfGenero;
+	
+	libro = record
+		isbn: integer;
+		anio: integer;
+		codigoAutor: integer;
+		genero: rangoGenero;
+	end;
+	
+	datosLista = record
+		isbn: integer;
+		anio: integer;
+		genero: rangoGenero;
+	end;
+	
+	listaLibros = ^nodo;
+	nodo = record
+		dato: datosLista;
+		sig: listaLibros;
+	end;
+	
+	datosArbol = record 
+		codigoAutor: integer;
+		lista: listaLibros;
+	end;
+	
+	arbol = ^nodo2;
+	nodo2 = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	autorYCantidad = record
+		codigoAutor: integer;
+		cantidadLibros: integer;
+	end;
+	
+	listaAutorCant = ^nodo3;
+	nodo3 = record
+		dato: autorYCantidad;
+		sig: listaAutorCant;
+	end;
+	
+// MODULOS
+
+// INICIO INCISO A	
+	program leerLibro(var lib: libro);
+	begin
+		lib.isbn := random(200);
+		if (lib.isbn <> corte) then begin 
+			lib.anio := random(76) + 1950;
+			lib.codigoAutor := random(500) + 1;
+			lib.genero := random(15) + 1;
+		end;
+	end;
+	
+	procedure agregarAdelante(var l: listaLibros; dL: datosLista);
+	var
+		nue: listaLibros;
+	begin
+		new(nue);
+		nue^.dato := dL;
+		nue^.sig := l;
+		l := nue;
+	end;
+	
+	procedure agregarEnArbol(var a: arbol; codAutor: integer; dL: datosLista);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato.codigoAutor := codAutor;
+			a^.dato.lista := nil;
+			agregarAdelante(a^.dato.lista, dL);
+			a^.HI := nil; a^.HD := nil;
+		end
+		else begin 
+			if (a^.dato.codigoAutor = codAutor) then 
+				agregarAdelante(a^.dato.lista, dL)
+			else begin 
+				if (a^.dato.codigoAutor > codAutor) then 
+					agregarEnArbol(a^.HI, codAutor, dL)
+				else
+					agregarEnArbol(a^.HD, codAutor, dL);
+			end;
+		end;
+	end;
+	
+	
+	procedure cargarArbol(var a: arbol);
+		procedure cargarDatosLista(var dL: datosLista; lib: libro);
+		begin
+			dL.isbn := lib.isbn;
+			dL.anio := lib.anio;
+			dL.genero := lib.genero;
+		end;
+	var
+		lib: libro;
+		dL: datosLista;
+	begin
+		leerLibro(lib);
+		while (lib.isbn <> corte) do begin
+			cargarDatosLista(dL, lib);
+			agregarEnArbol(a, lib.codigoAutor, dL)
+			leerLibro(lib);
+		end;
+	end;
+// FIN INCISO A
+
+// INICIO INCISO B
+	procedure nuevaEstructura(a: arbol; code: integer; var l2: listaAutorCant);
+		
+		procedure cargarAutorYCantidad(var ac: autorYCantidad; dA: datosArbol; l: listaLibros);
+			
+			function cuentoLibros(l: listaLibros): integer;
+			var
+				cant: integer;
+			begin
+				cant := 0;
+				while (l <> nil) do begin 
+					cant := cant + 1;
+					l := l^.sig;
+				end;
+			end;
+		
+		begin
+			ac.codigoAutor := dA.codigoAutor;
+			ac.cantidadLibros := cuentoLibros(l);
+		end;
+		
+		procedure agregarAdelante2(var l2: listaAutorCant; ac: autorYCantidad);
+		var
+			nue: listaAutorCant;
+		begin
+			new(nue);
+			nue^.dato := ac;
+			nue^.sig := l2;
+			l2 := nue;
+		end;
+		
+	var
+		ac: autorYCantidad;
+	begin
+		if (a <> nil) then begin 
+			if (a^.dato.codigoAutor > code) then begin
+				cargarAutorYCantidad(ac, a^.dato, a^.dato.lista);
+				agregarAdelante2(l2, ac);
+				nuevaEstructura(a^.HI, code, l2);
+				nuevaEstructura(a^.HD, code, l2);
+			end
+			else
+				nuevaEstructura(a^.HD, code, l2);
+		end;
+	end;
+// FIN INCISO B
+
+// INICIO INCISO C
+	procedure retornoCantidadYAutorMaximo(l2: listaAutorCant; var cantMax, codMax: integer);
+	begin
+		if (l2 <> nil) then begin 
+			if (l2^.dato.cantidadLibros > cantMax) then begin
+				cantMax := l2^.dato.cantidadLibros;
+				codMax := l2^.dato.codigoAutor;
+			end;
+			retornoCantidadYAutorMaximo(l2^.sig, cantMax, codMax);
+		end;
+	end;
+// FIN INCISO C
+	
+// PROGRAMA PRINCIPAL
+var
+	a: arbol;
+	cod, cantMax, codMax: integer;
+	l2: listaAutorCant;
+	
+begin
+	Randomize;
+	a := nil;
+	cargarArbol(a);
+	
+	readln(cod);
+	l2 := nil;
+	nuevaEstructura(a, l2, cod);
+	
+	cantMax := 0; codMax := -1;
+	retornoCantidadYAutorMaximo(l2, cantMax, codMax);
+end.
