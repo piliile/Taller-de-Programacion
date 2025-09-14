@@ -1,3 +1,9 @@
+clínica necesita un sistema para el procesamiento de las atenciones realizadas a los pacientes durante el año 2023.
+a) Implementar un módulo que lea información de las atenciones y retorne un vector donde se almacenen las atenciones agrupadas por mes. Las atenciones de cada mes deben quedar almacenadas en un árbol binario de búsqueda ordenado por DNI del paciente y sólo deben almacenarse dni del paciente y código de diagnóstico.
+De cada atención se lee: matrícula del médico, DNI del paciente, mes y diagnóstico (valor entre L y P). La lectura finaliza con matrícula O.
+b)
+Implementar un módulo recursivo que reciba el vector generado en a) y retorne el mes con mayor cantidad de atenciones.
+Implementar un módulo que reciba el vector generado en a) y un DNI de paciente, y retorne si fue atendido o no, el paciente con el DNI ingresado.
 program parcialTurnoN;
 const
 	corte = 0;
