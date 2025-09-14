@@ -1,0 +1,174 @@
+program parcialTurnoN;
+const
+	corte = 0;
+	dfMes = 12;
+	dfDiagnostico = 'P';
+type
+	rangoMes = 1..dfMes;
+	
+	atencion = record
+		matricula: integer;
+		dniPaciente: integer;
+		mes: rangoMes;
+		diagnostico: string;
+	end;
+
+	datosArbol = record
+		dniPaciente: integer;
+		diagnostico: string;
+	end;
+	
+	arbol = ^nodo;
+	nodo = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	vector = array [rangoMes] of arbol;
+	
+	
+	
+// MODULOS
+
+// INICIO INCISO A
+	procedure leerAtencion(var at: atencion);
+	var
+		vD: array[1..6] of string = ('L', 'M', 'N', 'Ñ', 'O', 'P');
+	begin
+		at.matricula := random(100);
+		if (at.matricula <> corte) then begin 
+			at.dniPaciente := random(7000) + 1;
+			at.mes := random(12) + 1;
+			at.diagnostico := vD[random(6) +1];
+		end;
+	end;
+	
+	procedure inicializarVector(var v: vector);
+	var
+		i: rangoMes;
+	begin
+		for i := 1 to dfMes do 
+			v[i] := nil;
+	end;
+	
+	procedure agregarEnArbol(var a: arbol; dA: datosArbol);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato := dA;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin 
+			if (a^.dato.dniPaciente > dA.dniPaciente) then 
+				agregarEnArbol(a^.HI, dA)
+			else
+				agregarEnArbol(a^.HD, dA);
+		end;
+	end;
+	
+	procedure cargarVector(var v: vector);
+		procedure cargarDatosArbol(var dA: datosArbol; at: atencion);
+		begin
+			dA.dniPaciente := at.dniPaciente;
+			dA.diagnostico := at.diagnostico;
+		end;
+	var
+		at: atencion;
+		dA: datosArbol;
+	begin
+		leerAtencion(at);
+		while (at.matricula <> corte) do begin 
+			cargarDatosArbol(dA, at);
+			agregarEnArbol(v[at.mes], dA);
+			leerAtencion(at);
+		end;
+	end;
+// FIN INCISO A
+
+// INICIO INCISO B
+	function retornoMesMasAtenciones(v: vector): integer;
+	
+		function cuentoAtenciones(a: arbol): integer; 
+		begin
+			if (a = nil) then 
+				cuentoAtenciones := 0
+			else
+				cuentoAtenciones := 1 + cuentoAtenciones(a^.HI) + cuentoAtenciones(a^.HD);
+		end;
+		
+		function buscoMesMax(v: vector; i, mesMax, maximo: integer): integer;
+		var
+			numeroAt: integer;
+		begin
+			numeroAt := 0;
+			if (i <= dfMes) then begin
+				numeroAt := cuentoAtenciones(v[i]);
+				if (numeroAt > maximo) then 
+					buscoMesMax := buscoMesMax(v, i + 1, i, numeroAt)
+				else
+					buscoMesMax := buscoMesMax(v, i + 1, mesMax, maximo);
+			end
+			else
+				buscoMesMax := mesMax;
+		end;
+	
+	var
+		i: rangoMes;
+		mesMax, maximo: integer;
+	begin
+		i := 1;
+		maximo := -1;
+		mesMax := -1;
+		retornoMesMasAtenciones := buscoMesMax(v, i, mesMax, maximo);
+	end;
+// FIN INCISO B
+
+// INICIO INCISO C
+	function retornoAtencionONo(v: vector; dni: integer): boolean;
+		function recorroArbol(a: arbol; dni: integer): boolean;
+		begin
+			if (a = nil) then 
+				recorroArbol := false
+			else begin
+				if (a^.dato.dniPaciente = dni) then 
+					recorroArbol := true
+				else begin 
+					if (a^.dato.dniPaciente > dni) then 
+						recorroArbol := recorroArbol(a^.HI, dni)
+					else
+						recorroArbol :=recorroArbol(a^.HD, dni)
+				end;
+			end;
+		end;
+	var
+		i: integer;
+		ok: boolean;
+	begin
+		i := 1;
+		ok := false;
+		while (i <= dfMes) and (not ok) do begin
+			if (recorroArbol(v[i], dni)) then
+				ok := true
+			else 
+				i := i + 1;
+		end;
+		retornoAtencionONo := ok;
+	end;
+// PROGRAMA PRINCIPAL
+
+var
+	v: vector;
+	mesMax, dni: integer;
+	aux: boolean;
+begin
+	Randomize;
+	inicializarVector(v);
+	cargarVector(v);
+	
+	mesMax := retornoMesMasAtenciones(v);
+	
+	readln(dni);
+	aux := retornoAtencionONo(v, dni);
+end.
