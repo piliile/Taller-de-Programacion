@@ -1,0 +1,189 @@
+program parcialTurnoH;
+const
+	dfSucursal = 10;
+	corte = 0;
+
+type
+	rangoSucursal = 1..dfSucursal;
+	
+	venta = record	
+		dniCliente: integer;
+		sucursal: rangoSucursal;
+		factura: integer;
+		monto: real;
+	end;
+	
+	compra = record
+		factura: integer;
+		monto: real;
+	end;
+	
+	listaCompras = ^nodo;
+	nodo = record
+		dato: compra;
+		sig: listaCompras;
+	end;
+	
+	datosArbol = record 
+		dniCliente: integer;
+		lista: listaCompras;
+	end;
+	
+	arbol = ^nodo2;
+	nodo2 = record
+		dato: datosArbol;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	vector = array [rangoSucursal] of integer;
+	
+	
+	
+// MODULOS
+
+// INICIO INCISO A
+	procedure leerVenta(var ven: venta);
+	begin
+		ven.dniCliente := random(7000);
+		if (ven.dniCliente <> corte) then begin 
+			ven.sucursal := random(10) + 1;
+			ven.factura := random(2000) + 1;
+			ven.monto := random(4000) + 100;
+		end;
+	end;
+	
+	procedure agregarAdelante(var l: listaCompras; c: compra);
+	var
+		nue: listaCompras;
+	begin
+		new(nue);
+		nue^.dato := c;
+		nue^.sig := l;
+		l := nue;
+	end;
+		
+	procedure inicializarVector(var v: vector);
+	var
+		i: rangoSucursal;
+	begin
+		for i := 1 to dfSucursal do 
+			v[i] := 0;
+	end;
+			
+	procedure agregarEnArbol(var a: arbol; dnicli: integer; c: compra);
+	begin
+		if (a = nil) then begin 
+			new(a);
+			a^.dato.dniCliente := dnicli;
+			a^.dato.lista := nil;
+			agregarAdelante(a^.dato.lista, c);
+			a^.HI := nil; a^.HD := nil;
+		end
+		else begin
+			if (a^.dato.dniCliente = dnicli) then 
+				agregarAdelante(a^.dato.lista, c)
+			else begin 
+				if (a^.dato.dniCliente > dnicli) then 
+					agregarEnArbol(a^.HI, dnicli, c)
+				else
+					agregarEnArbol(a^.HD, dnicli, c);
+			end;
+		end;
+	end;
+			
+	procedure agregarEnVector(var v: vector; suc: rangoSucursal);
+	begin
+		v[suc] := v[suc] + 1;
+	end;
+			
+	procedure cargarEstructuras(var a: arbol; var v: vector);
+		procedure cargarDatosLista(var c: compra; ven: venta);
+		begin
+			c.factura := ven.factura;
+			c.monto := ven.monto;
+		end;
+	var
+		ven: venta;
+		c: compra;
+	begin
+		leerVenta(ven);
+		while (ven.dniCliente <> corte) do begin 
+			cargarDatosLista(c, ven);
+			agregarEnArbol(a, ven.dniCliente, c);
+			agregarEnVector(v, ven.sucursal);
+			leerVenta(ven);
+		end;
+	end;	
+// FIN INCISO A
+
+// INICIO INCISO B
+	function retornoCantidadSuperan(a: arbol; montoleido: real; dnileido: integer): integer;
+		function retornoNumFacturasMayores(l: listaCompras; montoleido: real): integer;
+		var
+			cantFac: integer;
+		begin
+			cantFac := 0;
+			while (l <> nil) do begin
+				if (l^.dato.monto > montoleido) then 
+					cantFac := cantFac + 1;
+				l := l^.sig;
+			end;
+			retornoNumFacturasMayores := cantFac;
+		end;
+	begin
+		if (a = nil) then 
+			retornoCantidadSuperan := 0
+		else begin 
+			if (a^.dato.dniCliente = dnileido) then
+				retornoCantidadSuperan := retornoNumFacturasMayores(a^.dato.lista, montoleido)
+			else begin
+				if (a^.dato.dniCliente > dnileido) then 
+					retornoCantidadSuperan := retornoCantidadSuperan(a^.HI, montoleido, dnileido)
+				else
+					retornoCantidadSuperan := retornoCantidadSuperan(a^.HD, montoleido, dnileido);
+			end;
+		end;
+	end;
+// FIN INCISO B
+
+// INICIO INCISO C
+	function retornoCodigoMaxVentas(v: vector): integer;
+		function buscoMax(v: vector; i, maximo, codeMax: integer): integer;
+		begin	
+			if (i <= dfSucursal) then begin
+				if (v[i] > maximo) then 
+					buscoMax := buscoMax(v, i + 1, v[i], i)
+				else
+					buscoMax := buscoMax(v, i + 1, maximo, codeMax);
+			end
+			else
+				buscoMax := codeMax;
+		end;
+	var
+		i, maximo, codeMax: integer;
+	begin
+		i := 1;
+		maximo:= -1;
+		codeMax := 0;
+		retornoCodigoMaxVentas := buscoMax(v, i, maximo, codeMax);
+	end.
+//  FIN INCISO C
+
+// PROGRAMA PRINCIPAL
+var
+	a: arbol; 
+	v: vector;
+	montoleido: real;
+	dnileido, cantF, codMax: integer;
+begin
+	Randomize; 
+	a := nil;
+	inicializarVector(v);
+	cargarEstructuras(a, v); // A
+	
+	readln(montoleido); readln(dnileido);
+	cantF := retornoCantidadSuperan(a, montoleido, dnileido);
+	
+	codMax := retornoCodigoMaxVentas(v);
+end.	
