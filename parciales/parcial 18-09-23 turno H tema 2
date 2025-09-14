@@ -1,3 +1,10 @@
+{Una empresa de alquiler de autos desea procesar la información de sus alquileres. Implementar un programa que:
+a) Implementar un módulo que lea información de los alquileres y retorne una estructura de datos eficiente para la búsqueda por patente. Para cada patente deben quedar almacenados juntos todos sus alquileres .
+De cada alquiler se lee: dni del cliente, patente, mes y año. La lectura finaliza con la patente 0.
+b) Implementar un módulo que reciba la estructura generada en a) y un dni D. Este módulo debe retornar la
+cantidad de alquileres realizados por el dni D.
+c)
+Implementar un módulo que reciba la estructura generada en a), un año X y dos patentes A y B. Este módulo debe retornar la cantidad de alquileres realizados para las patentes entre A y B (incluidas) durante el año X.}
 program parcialturnoHtema2;
 const
 	corte = 0;
