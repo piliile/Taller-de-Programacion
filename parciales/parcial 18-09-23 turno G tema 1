@@ -1,0 +1,162 @@
+program parcialturnoG;
+const
+	corte = 0;
+	
+type
+	prestamo = record
+		numeroprestamo: integer;
+		isbn: integer;
+		codigosocio: integer;
+	end;
+	
+	arbol = ^nodo ;
+	nodo = record
+		dato: prestamo;
+		HI: arbol;
+		HD: arbol;
+	end;
+	
+	datosLista = record
+		codigosocio: integer;
+		cantidadprestamos: integer;
+	end;
+	
+	lista = ^nodo2;
+	nodo2 = record
+		dato: datosLista;
+		sig: lista;
+	end;
+		
+		
+// MODULOS
+
+// INICIO INCISO A
+	procedure leerprestamo(var p: prestamo);
+	begin
+		writeln('Ingrese el codigo de socio: ');
+		readln(p.codigosocio);
+		if (p.codigosocio <> corte)then begin 
+			p.isbn := random(200) + 1; writeln('El isbn generado es: ', p.isbn);
+			p.numeroprestamo := random(200) + 1; writeln('El numero de prestamo generado es: ', p.numeroprestamo);
+		end;
+	end;
+	
+	procedure agregarEnArbol(var a: arbol; p: prestamo);
+	begin
+		if (a = nil) then begin
+			new(a);
+			a^.dato := p;
+			a^.HI := nil;
+			a^.HD := nil;
+		end
+		else begin 
+			if (a^.dato.isbn > p.isbn) then 
+				agregarEnArbol(a^.HI, p)
+			else
+				agregarEnArbol(a^.HD, p);
+		end;
+	end;
+	
+	procedure agregarAdelante(var l: lista; socio, cantPres: integer);
+	var
+		nue: lista;
+	begin
+		new(nue);
+		nue^.dato.codigosocio := socio;
+		nue^.dato.cantidadprestamos := cantPres;
+		nue^.sig := l;
+		l := nue;
+	end;
+	
+	procedure cargarEstructuras(var a: arbol; var l: lista);
+	var
+		p: prestamo;
+		socioAct, cantidadPres: integer;
+	begin	
+		leerprestamo(p);
+		while (p.codigosocio <> corte) do begin 
+			socioAct := p.codigosocio;
+			cantidadPres := 0;
+			while (p.codigosocio <> corte) and (socioAct = p.codigosocio) do begin
+				agregarEnArbol(a, p);
+				cantidadPres := cantidadPres +1;
+				leerprestamo(p);
+			end;
+			agregarAdelante(l, socioAct, cantidadPres);
+		end;
+	end;
+		
+	procedure imprimirArbol(a: arbol);
+	begin
+		if (a <> nil) then begin 
+			imprimirArbol(a^.HI);
+			writeln('El numero de prestamo es: ', a^.dato.numeroprestamo, '. El isbn es: ', a^.dato.isbn, '. Y el codigo de socio es: ', a^.dato.codigosocio);
+			writeln('/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////');
+			imprimirArbol(a^.HD);
+		end;
+	end;
+	procedure imprimirLista(l: lista);
+	begin
+		while (l <> nil) do begin
+			writeln('El codigo de socio es: ', l^.dato.codigosocio, '. Y la cantidad de prestamos es: ', l^.dato.cantidadprestamos);
+			writeln('///////////////////////////////////////////////////////////////////////////////');
+			l := l^.sig;
+		end;
+	end;
+// FIN INCISO A
+
+// INICIO INCISO B
+	function retornoCantidadB(a: arbol; isbnleido: integer): integer;
+	begin
+		if (a = nil) then 
+			retornoCantidadB := 0
+		else begin
+			if (a^.dato.isbn = isbnleido) then 
+				retornoCantidadB := 1 + {retornoCantidadB(a^.HI, isbnleido) +} retornoCantidadB(a^.HD, isbnleido)
+			else begin
+				if (a^.dato.isbn > isbnleido) then 
+					retornoCantidadB := retornoCantidadB(a^.HI, isbnleido)
+				else
+					retornoCantidadB := retornoCantidadB(a^.HD, isbnleido);
+			end;
+		end;
+	end;
+// FIN INCISO B
+
+// INICIO INCISO C
+	function retornoCantidadC(l: lista; valor: integer): integer;
+	begin
+		if (l <> nil) then begin
+			if (l^.dato.cantidadprestamos > valor) then 
+				retornoCantidadC := 1 + retornoCantidadC(l^.sig, valor)
+			else
+				retornoCantidadC := retornoCantidadC(l^.sig, valor);
+		end
+		else
+			retornoCantidadC := 0;
+	end;
+
+
+// PROGRAMA PRINCIPAL
+
+var
+	a: arbol;
+	l: lista;
+	cant, isbnleido, valor,cantIncisoC: integer;
+begin
+	Randomize;
+	a := nil; l := nil;
+	cargarEstructuras(a, l); // A
+	writeln('El arbol impreso quedaria de la siguiente manera: '); imprimirArbol(a);
+	writeln('///////////////////////////////////////////////////////////////');
+	writeln('La lista impresa quedaria de la siguiente manera: '); imprimirLista(l);
+	
+	writeln('Ingrese un isbn de libro para buscarlo en el arbol: '); readln(isbnleido);
+	cant := retornoCantidadB(a, isbnleido);
+	writeln('La cantidad de prestamos del isbn leido: ', isbnleido, ' es: ', cant);
+	
+	writeln('Ingrese un valor X para retornar la cantidad de socios con cantidad de prestamos superiores a dicho valor: ');
+	readln(valor);
+	cantIncisoC := retornoCantidadC(l, valor);
+	writeln('La cantidad de prestamos superiores al valor ', valor, ' es: ', cantIncisoC);
+end.
