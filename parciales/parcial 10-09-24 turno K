@@ -177,7 +177,7 @@ type
 				cantMax := l2^.dato.cantidadLibros;
 				codMax := l2^.dato.codigoAutor;
 			end;
-			retornoCantidadYAutorMaximo(l2^.sig, cantMax, codMax);
+		retornoCantidadYAutorMaximo(l2^.sig, cantMax, codMax);
 		end;
 	end;
 // FIN INCISO C
