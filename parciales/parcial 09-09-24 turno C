@@ -6,10 +6,11 @@ almacenar un vector con el monto total gastado por dicho cliente en cada mes del
 B. realizar un modulo que reciba la estrctura generada en A y un codigo de cliente, y retorne el mes con mayor gasto de dicho cliente.
 C. realizar un modulo que reciba la estructura generada en A y un mes, y retorne la cantidad de clientes que no gastaron nada en dicho mes.}
 
-program parcialTurnoL;
+program parcialC;
 const
-	corte = 0;
 	dfMes = 12;
+	corte = 0;
+
 type
 	rangoMes = 1..dfMes;
 	
@@ -17,179 +18,174 @@ type
 		codigoCliente: integer;
 		numeroFactura: integer;
 		mes: rangoMes;
-		montoGastado: real;
+		montoTotal: real;
 	end;
 	
 	vectorMontos = array [rangoMes] of real;
 	
 	datosArbol = record
 		codigoCliente: integer;
-		vec: vectorMontos;
+		vector: vectorMontos;
 	end;
 	
-	arbol = ^nodo;
-	nodo = record
+	arbol = ^nodoArbol;
+	nodoArbol = record
 		dato: datosArbol;
 		HI: arbol;
 		HD: arbol;
 	end;
 	
-	
-// MÓDULOS
+
+
+// MODULOS
 
 // INICIO INCISO A
 	procedure leerCompra(var c: compra);
-	begin
-		c.codigoCliente := random(20);
-		writeln('El codigo de cliente de la compra es: ', c.codigoCliente);
-		if (c.codigoCliente <> corte) then begin
-			c.numeroFactura := random(300) + 100;
-			writeln('El numero de factura de la compra es: ', c.numeroFactura);
+	begin	
+		c.codigoCliente := random(50);
+		writeln('El codigo de cliente generado es: ', c.codigoCliente);
+		if (c.codigoCliente <> corte) then begin 
+			c.numeroFactura := random(200) + 1;
+			writeln('El numero de factura generado es: ', c.numeroFactura);
 			c.mes := random(12) + 1;
-			writeln('El mes de la compra es: ', c.mes);
-			c.montoGastado := random(1000) + 500;
-			writeln('El monto gastado de la compra es: ', c.montoGastado:0:2);
+			writeln('El mes generado es: ', c.mes);
+			c.montoTotal := random(7000) + 500;
+			writeln('El monto generado es: ', c.montoTotal:0:2);
+			writeln;
 		end;
 	end;
 	
-	procedure inicializarVectorMontos(var v: vectorMontos);
+	procedure inicializarVector(var v: vectorMontos);
 	var
 		i: rangoMes;
 	begin
 		for i := 1 to dfMes do 
 			v[i] := 0;
 	end;
-
-	procedure agregar(var a: arbol; c: compra);
+	
+	procedure cargarVector(var v: vectorMontos; mes: rangoMes; montoTotal: real);
 	begin
-		if (a = nil) then begin
+		v[mes] := v[mes] + montoTotal;
+	end;
+	
+	procedure agregarEnArbol(var a: arbol; c: compra);
+	begin
+		if (a = nil) then begin 
 			new(a);
 			a^.dato.codigoCliente := c.codigoCliente;
-			inicializarVectorMontos(a^.dato.vec);
-			a^.dato.vec[c.mes] := c.montoGastado;
-			a^.HI := nil;
-			a^.HD := nil;
+			inicializarVector(a^.dato.vector);
+			cargarVector(a^.dato.vector, c.mes, c.montoTotal);
+			a^.HI := nil; a^.HD := nil;
 		end
 		else begin
 			if (a^.dato.codigoCliente = c.codigoCliente) then 
-				a^.dato.vec[c.mes] := a^.dato.vec[c.mes] + c.montoGastado
+				cargarVector(a^.dato.vector, c.mes, c.montoTotal)
 			else begin
 				if (a^.dato.codigoCliente > c.codigoCliente) then 
-					agregar(a^.HI, c)
+					agregarEnArbol(a^.HI, c)
 				else
-					agregar(a^.HD, c);
+					agregarEnArbol(a^.HD, c);
 			end;
-		end;		
+		end;
 	end;
+	
 	
 	procedure cargarArbol(var a: arbol);
 	var
 		c: compra;
-	begin 
+	begin
 		leerCompra(c);
 		while (c.codigoCliente <> corte) do begin 
-			agregar(a, c);
+			agregarEnArbol(a, c);
 			leerCompra(c);
 		end;
 	end;
 	
-	procedure mostrarArbol(a: arbol);
-		
-		procedure mostrarVectorMontos(v: vectorMontos);
+	procedure imprimirArbol(a: arbol);
+	
+		procedure imprimirVector(v: vectorMontos);
 		var
 			i: rangoMes;
-		begin 
-			for i := 1 to dfMes do 
-				writeln ('El mes: ', i , ' tuvo un monto total gastado de: ' , v[i]:0:2);
+		begin	
+			for i := 1 to dfMes do begin
+				writeln('El mes ', i, ' tiene un monto de: ', v[i]:0:2);
+				writeln;
+			end;
 		end;
+		
 	begin
 		if (a <> nil) then begin 
-			mostrarArbol(a^.HI);
-			writeln('El código de cliente es: ', a^.dato.codigoCliente);
-			mostrarVectorMontos(a^.dato.vec);
-			mostrarArbol(a^.HD);
+			imprimirArbol(a^.HI);
+			writeln('El codigo de cliente', a^.dato.codigoCliente, ' tiene el siguiente vector de montos: ');
+			imprimirVector(a^.dato.vector);
+			imprimirArbol(a^.HD);
 		end;
 	end;
 // FIN INCISO A
-
-// INICIO INCISO B
-	function retornoMayorMes(a: arbol; codcli: integer): integer;
-	
-		function buscoMaximoMes(v: vectorMontos): integer;
+	function retornoMesMasGasto(a: arbol; codCli: integer): integer;
+		function buscoMesMaximo(v: vectorMontos): integer;
 		var
 			i: rangoMes;
-			maxMes: integer;
-			maxMonto: real;
+			codigoMaximo: integer;
+			cantidadMaxima: real;
 		begin
-			maxMonto := -1;
-			maxMes := 0;
+			cantidadMaxima := -1 ; codigoMaximo := -1;
 			for i := 1 to dfMes do begin 
-				if (maxMonto < v[i]) then begin 
-					maxMonto := v[i];
-					maxMes := i;
+				if (v[i] > cantidadMaxima) then begin
+					cantidadMaxima := v[i];
+					codigoMaximo := i;
 				end;
 			end;
-			buscoMaximoMes := maxMes;
+			buscoMesMaximo := codigoMaximo;
 		end;
-		
-	begin 
+	begin
 		if (a <> nil) then begin 
-			if (a^.dato.codigoCliente = codcli) then 
-				retornoMayorMes := buscoMaximoMes(a^.dato.vec)
+			if (a^.dato.codigoCliente = codCli) then 
+				retornoMesMasGasto := buscoMesMaximo(a^.dato.vector)
 			else begin
-				if (a^.dato.codigoCliente > codcli) then 
-					retornoMayorMes := retornoMayorMes(a^.HI, codcli)
+				if (a^.dato.codigoCliente > codCli) then 
+					retornoMesMasGasto := retornoMesMasGasto(a^.HI, codCli)
 				else
-					retornoMayorMes := retornoMayorMes(a^.HD, codcli)
+					retornoMesMasGasto := retornoMesMasGasto(a^.HD, codCli);
 			end;
-		end
-		else
-			retornoMayorMes := -1;
+		end;
 	end;
 // FIN INCISO B
 
 // INICIO INCISO C
-// C. realizar un modulo que reciba la estructura generada en A y un mes, y retorne la cantidad de clientes que no gastaron nada en dicho mes
-		function retornoCantidadSinGastar(a: arbol; mesleido: rangoMes): integer;
-			
-			function cantNoGastaron (v: vectorMontos; mesleido: integer): integer;
-			begin 
-				if (v[mesleido] = 0) then 
-					cantNoGastaron := 1
-				else
-					cantNoGastaron := 0;
-			end;
-			
-		begin 
-			if (a = nil) then 	
-				retornoCantidadSinGastar := 0
+	function retornoCantidadC(a: arbol; mesleido: rangoMes): integer;
+		function cumpleCondicion(v: vectorMontos; mesleido: rangoMes): boolean;
+		begin
+			cumpleCondicion := (v[mesleido] = 0);
+		end;
+	begin
+		if (a <> nil) then begin 
+			if (cumpleCondicion(a^.dato.vector, mesleido)) then 	
+				retornoCantidadC := 1 + retornoCantidadC(a^.HI, mesleido) + retornoCantidadC(a^.HD, mesleido)
 			else
-				retornoCantidadSinGastar := cantNoGastaron(a^.dato.vec, mesleido) + retornoCantidadSinGastar(a^.HI, mesleido) + retornoCantidadSinGastar(a^.HD, mesleido);
-		end;	
-
-// FIN INCISO C
-
-
+				retornoCantidadC := retornoCantidadC(a^.HI, mesleido) + retornoCantidadC(a^.HD, mesleido);
+		end
+		else
+			retornoCantidadC := 0;
+	end;
+	
 // PROGRAMA PRINCIPAL
-
 var
 	a: arbol;
-	maximomes, month: rangoMes;
-	cantidadSinGastar, codcli: integer;
-begin 
+	mesMasGasto, codCli, cantClientesC: integer;
+	mesleido: rangoMes;
+begin
 	Randomize;
 	a := nil;
-	cargarArbol(a); // A
-	writeln('El arbol cargado quedaría de la siguiente manera: ');
-	mostrarArbol(a); // NO LO PIDE. solo para compilar y ver la ejecución.
+	cargarArbol(a);
+	writeln('El arbol impreso quedaría de la siguiente manera: '); imprimirArbol(a); writeln;
 	
-	writeln('Ingrese un codigo de cliente para buscar el mes con mayor gastos: ');
-	readln(codcli); 
-	maximomes := retornoMayorMes(a, codcli); // B // Si pongo un numero q no está me devuelve 145.
-	writeln('El mes maximo con mas gastos es: ', maximomes); // NO LO PIDE. 
+	writeln('Ingrese un codigo de cliente: '); readln(codCli);
+	mesMasGasto := retornoMesMasGasto(a, codCli);
+	writeln('El mes con mas gastos fue: ', mesMasGasto); writeln;
 	
-	writeln('Ingrese un mes para buscar la cantidad de clientes que no gastaron nada en dicho mes: ');
-	readln(month);
-	cantidadSinGastar := retornoCantidadSinGastar(a, month); // C
-	writeln('La cantidad de clientes que no gastaron nada en el mes ', month, ' fueron: ', cantidadSinGastar); // NO LO PIDE.
+	
+	writeln('Ingrese un mes para ver cuantos clientes no gastaron nada en dicho mes: '); readln(mesleido);
+	cantClientesC := retornoCantidadC(a, mesleido);
+	writeln('La cantidad de clientes que no gastaron nada en el mes ', mesleido, ' son: ', cantClientesC, ' clientes.');
 end.
